@@ -1,0 +1,39 @@
+ADD
+1/32
+maybe panel for what does what fraction of health
+dynamax
+levels fuck up display
++1 all stats button doesnt register when adding moves to benchmark (gen7)
+loading screen
+multiscale vs multihit moves
+weak armor vs multihit physical
+show total damage of each benchmark in hp or % idk
+copy paste benchmark
+fix buttons
+parental bond
+do raise + lower strat for single side ev optimization?
+think about mixed bench optimization a bit more
+optimize multihit calcs (use syl calc method)
+
+check phys/spec with 2 calcs, 0 and 252. if no change in dmg, ignore loop
+
+find hp ev breakpoints
+skip defense ev breakpoints where they happen
+do defensive evs first (stop when 0 hp evs required)
+make dictionary of defense evs -> damage probabilities (sykcalc) dictionary for each bench
+make dictionary of hpevs -> defense evs for each bench
+when adding new entry, check if you skip an hp value and add that missing entry (will need to recalc rolls)
+compile all benchmarks into one ev spread for each hp value
+
+tera water surging strikes
+pokemon item slot in optimizer
+^calc sitrus and iapapa properly
+maybe add option to put heal turns into benchmark window but i suspect it will be too crowded
+maybe try to improve benchmark window ui
+Draining moves
+consider using target pokemon like syl calc
+show attack count in benchmark window
+nameable benchmarks
+make benchmark buttons narrower (fit more without dropdown)
+filter sets by tier
+champions and other gens support stuff
