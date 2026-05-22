@@ -1,6 +1,7 @@
 const PATH = 'scripts/'
 const scripts = [
     'doCalc.js',
+    'test.js'
 ];
 
 // Recursively load all scripts in the tree.
@@ -21,6 +22,6 @@ function loadScript(index = 0) {
 
 // Only start loading once the window is loaded
 // just in case any of the resources we're overwriting are needed
-//window.onload = () => {
+window.onload = function() {
     loadScript();
-//};
+};
