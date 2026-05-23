@@ -1,7 +1,7 @@
 const PATH = 'scripts/'
 const scripts = [
     'doCalc.js',
-    'test.js'
+    'initialize.js'
 ];
 
 // Recursively load all scripts in the tree.

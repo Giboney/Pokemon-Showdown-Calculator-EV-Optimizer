@@ -25,6 +25,10 @@ make dictionary of hpevs -> defense evs for each bench
 when adding new entry, check if you skip an hp value and add that missing entry (will need to recalc rolls)
 compile all benchmarks into one ev spread for each hp value
 
+^doesnt work for mixed benches
+works for single side benches on both sides at least
+need a faster way for mixed benches
+
 tera water surging strikes
 pokemon item slot in optimizer
 ^calc sitrus and iapapa properly
