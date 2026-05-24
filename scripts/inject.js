@@ -1,21 +1,45 @@
-const PATH = 'scripts/'
+const scriptsPath = 'scripts/'
 const scripts = [
     'doCalc.js',
-    'initialize.js'
+    'util.js',
+    'setbuilder.js',
+    'ui.js',
+    'main.js'
 ];
 
+const stylesPath = 'css/'
+const styles = [
+    'styles.css'
+]
+
 // Recursively load all scripts in the tree.
-function loadScript(index = 0) {
+function loadScripts(index = 0) {
     const script = scripts[index];
     if (!script) return;
 
     const s = document.createElement('script');
-    s.src = chrome.runtime.getURL(PATH + script);
+    s.src = chrome.runtime.getURL(scriptsPath + script);
+    s.type = 'module';
 
     s.onload = () => {
-        s.remove();
-        loadScript(index + 1);
+        s.remove(); // interesting
+        loadScripts(index + 1);
     };
+
+    (document.head || document.documentElement).appendChild(s);
+}
+
+function loadStyles(index = 0) {
+    const style = styles[index];
+    if (!style) return;
+
+    const s = document.createElement('link');
+    s.rel = 'stylesheet';
+    s.href = chrome.runtime.getURL(stylesPath + styles);
+
+    s.onload = () => {
+        loadStyles(index + 1);
+    }
 
     (document.head || document.documentElement).appendChild(s);
 }
@@ -23,5 +47,6 @@ function loadScript(index = 0) {
 // Only start loading once the window is loaded
 // just in case any of the resources we're overwriting are needed
 window.onload = function() {
-    loadScript();
+    loadScripts();
+    loadStyles();
 };

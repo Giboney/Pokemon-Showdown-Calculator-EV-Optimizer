@@ -2,7 +2,7 @@
     "manifest_version": 3,
     "name": "Pokemon Showdown Calculator EV Optimizer",
     "version": "1.4.0",
-    "description": "This extension allows the user to input EV benchmarks using the Pokemon Showdown Calculator and outputs an optimized EV spread.",
+    "description": "This extension allows the user to input EV benchmarks using the Pokemon Showdown Calculator, and outputs an optimized EV spread.",
 
     "icons": {
         "16": "images/icon16.png",
@@ -19,7 +19,7 @@
     ],
     "web_accessible_resources": [
         {
-            "resources": ["scripts/*"],
+            "resources": ["scripts/*", "css/*"],
             "matches": ["https://calc.pokemonshowdown.com/*"]
         }
     ],
