@@ -1,6 +1,6 @@
 const scriptsPath = 'scripts/'
 const scripts = [
-    'doCalc.js',
+    // 'doCalc.js',
     'util.js',
     'setbuilder.js',
     'ui.js',
@@ -9,7 +9,8 @@ const scripts = [
 
 const stylesPath = 'css/'
 const styles = [
-    'styles.css'
+    'styles.css',
+    'darkStyles.css'
 ]
 
 // Recursively load all scripts in the tree.
@@ -29,13 +30,15 @@ function loadScripts(index = 0) {
     (document.head || document.documentElement).appendChild(s);
 }
 
+// Recursively load all styles in the tree.
 function loadStyles(index = 0) {
     const style = styles[index];
     if (!style) return;
 
     const s = document.createElement('link');
     s.rel = 'stylesheet';
-    s.href = chrome.runtime.getURL(stylesPath + styles);
+    s.href = chrome.runtime.getURL(stylesPath + style);
+    s.id = style.slice(0,-4);
 
     s.onload = () => {
         loadStyles(index + 1);
@@ -47,6 +50,6 @@ function loadStyles(index = 0) {
 // Only start loading once the window is loaded
 // just in case any of the resources we're overwriting are needed
 window.onload = function() {
+    loadStyles(); // load styles first
     loadScripts();
-    loadStyles();
 };

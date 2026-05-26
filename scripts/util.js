@@ -12,3 +12,7 @@ export function calcStatEVs(pokemon, statID, evs) {
         pokemon.nature
     )
 }
+
+export function capitalize(val) {
+    return String(val).charAt(0).toUpperCase() + String(val).slice(1);
+}

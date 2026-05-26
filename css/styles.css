@@ -1,3 +1,144 @@
-.btn-xxxxwide {
+/* variables */
+:root {
+    /* default to light theme */
+    /* --text: #222222; */
+    --button-text-color: #222222;
+    /* --border-color: #AAAAAA;
+    --button-background: linear-gradient(to bottom, #f6f6f6, #d3d3d3); */
+}
+
+
+/* Changes to existing syles from the calc */
+.poke-info {
+    position: relative;
+}
+
+.field-info {
+    position: relative;
+}
+
+header {
+    margin-bottom: 10px;
+}
+
+.move-cat, .move-type {
+    width: 5.5em;
+}
+
+.move-selector {
     width: 11em;
+}
+
+.move-times, .move-hits {
+    width: 5.3em;
+}
+
+.poke-info input.move-bp {
+    width: 1.8em;
+}
+
+
+
+/* new stuff */
+.btn-4xwide {
+    width: 11em;
+}
+
+.btn-top-left {
+    border-radius: 8px 0 0 0;
+}
+
+.btn-top-right {
+    border-radius: 0 8px 0 0;
+}
+
+.btn-btm-right {
+    border-radius: 0 0 8px 0;
+}
+
+.btn-btm-left {
+    border-radius: 0 0 0 8px;
+}
+
+.collapse-left {
+    left: -68.9px;
+}
+
+.collapse-right {
+    right: -68.9px;
+}
+
+.collapse-panel {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    top: 89.9px;
+}
+
+.collapse-btn {
+    font-size: 0.9em !important;
+    width: 4.5em !important;
+    height: 2em;
+    padding: 4px 8px;
+    display: flex !important;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.collapse-right > .collapse-btn::before {
+    content: '';
+    border: 0.4em solid transparent;
+    border-top-color: var(--button-text-color);
+    position: relative;
+    top: 0.25em;
+}
+
+.collapse-right > .collapse-checkbox:checked + .collapse-btn::before {
+    border-top-color: transparent;
+    border-right-color: var(--button-text-color);
+    top: 0.1em;
+    left: -0.4em;
+}
+
+.collapse-left > .collapse-btn::after {
+    content: '';
+    border: 0.4em solid transparent;
+    border-top-color: var(--button-text-color);
+    position: relative;
+    top: 0.25em;
+    left: 0.25em;
+}
+
+.collapse-left > .collapse-checkbox:checked + .collapse-btn::after {
+    border-top-color: transparent;
+    border-left-color: var(--button-text-color);
+    top: 0.1em;
+    left: 0.4em;
+}
+
+#fieldCollapse, #fieldCollapse + .collapse-btn {
+    position: absolute;
+    left: 50%;
+    top: 330px;
+    transform: translate(-50%, -50%);
+}
+
+#fieldCollapse + .collapse-btn {
+    height: 3em;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+#fieldCollapse + .collapse-btn::after {
+    content: '';
+    border: 0.4em solid transparent;
+    border-top-color: var(--button-text-color);
+    position: relative;
+    top: 0.2em;
+}
+
+#fieldCollapse:checked + .collapse-btn::after {
+    border-top-color: transparent;
+    border-bottom-color: var(--button-text-color);
+    top: -0.2em;
 }
