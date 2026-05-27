@@ -72,8 +72,8 @@ function createCollapsePanels() {
             collapseBtn('Moves', 'btm', 'right')
         )
     )
-    $('#p1').prepend(collapsePanelL)
-    $('#p2').prepend(collapsePanelR)
+    $('#p1').append(collapsePanelL)
+    $('#p2').append(collapsePanelR)
 
     $('.collapse-checkbox').on('change', function() {
         let target = getCollapseTarget($(this)[0].id)
@@ -82,6 +82,9 @@ function createCollapsePanels() {
     })
 }
 
+// breaks when gen is switched to rby
+// use element style display none instead of class
+// need to change position depending on gen
 function createFieldCollapseBtn() {
     $('div:has(> #magicRoomInstruction)').css('display', '')
     $('.field-info').append(collapseBtn('field'))
@@ -100,6 +103,27 @@ function createFieldCollapseBtn() {
         ].join(', ')).toggleClass('hide', $(this).prop('checked'))
     })
 }
+
+
+let optimizerPanel = $('<fieldset>', {id: 'optimizerPanel'})
+optimizerPanel.append($('<legend>', {text: 'Optimizer'}))
+$('.main-result-group').after(optimizerPanel)
+
+// fixing base calc panel positioning (it was off before)
+let calcPanelsDiv = $('<div>', {id: 'calcPanels'})
+optimizerPanel.after(calcPanelsDiv)
+$('.panel').appendTo(calcPanelsDiv)
+
+let benchDiv = $('<div>') // add id later if needed
+let benchTabs = $('<div>', {id: 'benchTabs'})
+let benchWindow = $('<div>', {id: 'benchWindow'})
+benchDiv.append([benchTabs, benchWindow])
+$('.move-result-group > div:has(#resultMoveL1)').after(benchDiv)
+
+for (let i = 1; i <= 4; i++) {
+    $(`#resultDamageL${i}`).prependTo($(`#resultDamageL${i}`).parent())
+}
+
 
 
 // main

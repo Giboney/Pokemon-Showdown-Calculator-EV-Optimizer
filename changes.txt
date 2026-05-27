@@ -41,3 +41,8 @@ nameable benchmarks
 make benchmark buttons narrower (fit more without dropdown)
 filter sets by tier
 champions and other gens support stuff
+
+use main result group to display benchmark calcs too!!!!!
+put benchmark buttons as part of moves radio group
+may need to update calc trigger stuff but its doable + saves a bunch of space
+add new tab in benchamrk window for calculated results

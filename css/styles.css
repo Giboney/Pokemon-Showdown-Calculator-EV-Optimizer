@@ -7,8 +7,7 @@
     --button-background: linear-gradient(to bottom, #f6f6f6, #d3d3d3); */
 }
 
-
-/* Changes to existing syles from the calc */
+/* { Changes to existing syles from the calc */
 .poke-info {
     position: relative;
 }
@@ -37,9 +36,23 @@ header {
     width: 1.8em;
 }
 
+.move-result-subgroup:has(#resultMoveL1) {
+    text-align: right;
+}
+
+#resultMoveL1 + .btn,
+#resultMoveL2 + .btn,
+#resultMoveL3 + .btn,
+#resultMoveL4 + .btn {
+    margin-right: 0;
+    margin-left: 1em;
+}
+/* } */
 
 
-/* new stuff */
+/* { new stuff */
+
+/* { generic */
 .btn-4xwide {
     width: 11em;
 }
@@ -59,7 +72,9 @@ header {
 .btn-btm-left {
     border-radius: 0 0 0 8px;
 }
+/* } */
 
+/* { collapsables stuff */
 .collapse-left {
     left: -68.9px;
 }
@@ -142,3 +157,32 @@ header {
     border-bottom-color: var(--button-text-color);
     top: -0.2em;
 }
+/* } */
+
+/* { optimizer panel stuff */
+#calcPanels {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+}
+
+#optimizerPanel {
+    box-sizing: border-box;
+    width: calc(100% - 4px);
+    margin-bottom: 2px;
+}
+/* } */
+
+/* { bench window stuff */
+#benchTabs {
+
+}
+
+#benchWindow {
+
+}
+
+/* } */
+
+
+/* } */
