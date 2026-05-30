@@ -84,6 +84,8 @@ function createCollapsePanels() {
 
 // breaks when gen is switched to rby
 // use element style display none instead of class
+// use jquery .hide()
+//be careful tho it might unhide stuff in other gens
 // need to change position depending on gen
 function createFieldCollapseBtn() {
     $('div:has(> #magicRoomInstruction)').css('display', '')
@@ -104,25 +106,103 @@ function createFieldCollapseBtn() {
     })
 }
 
-
+// create optimizer panel
 let optimizerPanel = $('<fieldset>', {id: 'optimizerPanel'})
 optimizerPanel.append($('<legend>', {text: 'Optimizer'}))
 $('.main-result-group').after(optimizerPanel)
 
 // fixing base calc panel positioning (it was off before)
+// calcPanels div is display flex
 let calcPanelsDiv = $('<div>', {id: 'calcPanels'})
 optimizerPanel.after(calcPanelsDiv)
 $('.panel').appendTo(calcPanelsDiv)
 
+//create bench window
 let benchDiv = $('<div>') // add id later if needed
 let benchTabs = $('<div>', {id: 'benchTabs'})
 let benchWindow = $('<div>', {id: 'benchWindow'})
 benchDiv.append([benchTabs, benchWindow])
-$('.move-result-group > div:has(#resultMoveL1)').after(benchDiv)
+$('.move-result-subgroup:has(#resultHeaderL)').after(benchDiv)
 
+//move % damage to left side for p1
 for (let i = 1; i <= 4; i++) {
     $(`#resultDamageL${i}`).prependTo($(`#resultDamageL${i}`).parent())
 }
+
+// fix rolls display
+$(".result-move").off('change')
+
+displayDamageHits = function(damage) {
+    // Fixed Damage
+	if (typeof damage === 'number') return "(" + damage.toString() + ")";
+	// Standard Damage
+	if (damage.length > 2 && typeof damage[0] === 'number')
+		return "(" + damage.join(', ') + ")";
+	// Fixed Parental Bond Damage
+	if (typeof damage[0] === 'number' && typeof damage[1] === 'number') {
+		return '1st Hit: (' + damage[0] + ')\n2nd Hit: (' + damage[1] + ")";
+	}
+	// Multihit Damage
+	var fullText = "";
+	for (var i = 1; i <= damage.length; i++) {
+		var txt = toOrdinal(i) + " Hit: (" + damage[i - 1].join(', ') + ")";
+		if (i < damage.length) txt += "\n";
+		fullText += txt;
+		// if (i % 2 == 1 && i < damage.length) fullText += "\n";
+	}
+    console.log(fullText)
+	return fullText;
+}
+
+$(".result-move").on('change', function () {
+	if (damageResults) {
+		var result = findDamageResult($(this));
+		if (result) {
+			var desc = result.fullDesc(notation, false);
+			if (desc.indexOf('--') === -1) desc += ' -- possibly the worst move ever';
+			$("#mainResult").text(desc);
+			var summary = displayDamageHits(result.damage);
+			var rest = "";
+			var newLine = summary.indexOf('\n');
+			if (newLine > -1) {
+				rest = summary.substring(newLine + 1);
+				summary = summary.substring(0, newLine);
+			}
+			$("#firstDmgValues").text("Possible damage amounts: " + summary);
+			if (rest !== "") $("#restDmgValues").text(rest);
+
+			if (rest.trim() === "") {
+				$("#firstDmgValues").css("display", "block");
+				$("#restDmgValues").text("");
+			} else {
+				$("#damageValues").removeAttr("open");
+				$("#firstDmgValues").css("display", "revert");
+			}
+		}
+	}
+});
+
+// fix/add copyable result/rolls
+let rolls = $('#damageValues')
+let rollsTooltip = $('<div>', {id: 'rollsTooltip', style: 'visibility: hidden', text: 'Copied'})
+rolls.attr('title', 'Right-click to copy.')
+rolls.after(rollsTooltip)
+rolls.on('contextmenu', function() { return false })
+rolls.on('mousedown', function(e) {
+    if (e.button === 2) {
+        rolls.one('mouseup', function() {
+            if (e.button === 2) {
+                let text = $('#firstDmgValues').text() + '\n' + $('#restDmgValues').text()
+                navigator.clipboard.writeText(text).then(function () {
+                    $('#rollsTooltip').css('visibility', 'visible')
+                    setTimeout(function () {
+                        $('#rollsTooltip').css('visibility', 'hidden')
+                    }, 1500);
+                })
+            }
+        })
+    }
+})
 
 
 

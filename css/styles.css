@@ -3,8 +3,8 @@
     /* default to light theme */
     /* --text: #222222; */
     --button-text-color: #222222;
-    /* --border-color: #AAAAAA;
-    --button-background: linear-gradient(to bottom, #f6f6f6, #d3d3d3); */
+    --border-color: #AAAAAA;
+    /* --button-background: linear-gradient(to bottom, #f6f6f6, #d3d3d3); */
 }
 
 /* { Changes to existing syles from the calc */
@@ -36,21 +36,101 @@ header {
     width: 1.8em;
 }
 
-.move-result-subgroup:has(#resultMoveL1) {
+.move-result-subgroup:has(#resultHeaderL) {
     text-align: right;
 }
 
-#resultMoveL1 + .btn,
-#resultMoveL2 + .btn,
-#resultMoveL3 + .btn,
-#resultMoveL4 + .btn {
-    margin-right: 0;
+.move-result-subgroup:has(#resultHeaderL) > div > .result-move + .btn {
+    margin-right: -3px;
     margin-left: 1em;
 }
+
+div:has(> .result-move) {
+    display: flex;
+}
+
+.move-result-subgroup:has(#resultHeaderL) div:has(> .result-move) {
+    justify-content: flex-end;
+}
+
+.result-move + .btn {
+    min-width: 10em;
+    align-content: center;
+}
+
+.main-result-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+}
+
+.big-text:has(#mainResult) {
+    position: relative;
+}
+
+#tooltipText {
+    left: 50%;
+    top: -1.5em;
+    transform: translate(-50%, -50%);
+}
+
+#tooltipText::after {
+    left: 50%;
+    transform: translatex(-50%);
+}
+
+#mainResult {
+    padding: 0.5em 0;
+}
+
+.small-text:has(#damageValues) {
+    position: relative;
+}
+
+#damageValues {
+    padding: 0 0 0.7em;
+}
+
+#damageValues:hover {
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+#restDmgValues {
+    margin: 0;
+}
+
 /* } */
 
 
 /* { new stuff */
+
+/* { copy rolls */
+#rollsTooltip {
+    position: absolute;
+    left: 50%;
+    bottom: -3.3em;
+    transform: translate(-50%, -50%);
+    visibility: hidden;
+    border-radius: 5px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    text-align: center;
+    padding: 5px;
+    font-weight: normal;
+}
+
+#rollsTooltip::after {
+    position: absolute;
+    left: 50%;
+    transform: translatex(-50%);
+    bottom: 100%;
+    content: '';
+    border: 6px solid transparent;
+    border-bottom-color: rgba(0, 0, 0, 0.7);
+}
+/* } */
 
 /* { generic */
 .btn-4xwide {
@@ -179,7 +259,13 @@ header {
 }
 
 #benchWindow {
-
+    border: 1px solid var(--border-color);
+    min-width: 27em;
+    max-width: 56em;
+    min-height: 100%;
+    margin: 0 1em;
+    resize: both;
+    overflow: auto;
 }
 
 /* } */

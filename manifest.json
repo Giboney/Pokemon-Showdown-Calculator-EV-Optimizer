@@ -11,18 +11,30 @@
         "128": "images/icon128.png"
     },
 
+    "action": {
+        "default_icon": {
+            "16": "images/icon16.png",
+            "32": "images/icon32.png",
+            "48": "images/icon48.png",
+            "128": "images/icon128.png"
+        },
+        "default_popup": "html/popup.html"
+    },
+
     "content_scripts": [
         {
             "matches": ["https://calc.pokemonshowdown.com/*"],
             "js": ["scripts/inject.js"]
         }
     ],
+
     "web_accessible_resources": [
         {
             "resources": ["scripts/*", "css/*"],
             "matches": ["https://calc.pokemonshowdown.com/*"]
         }
     ],
+
     "browser_specific_settings": {
         "gecko": {
             "id": "{3175fac9-63d9-4efa-b0ff-c1eb876ae8b4}",

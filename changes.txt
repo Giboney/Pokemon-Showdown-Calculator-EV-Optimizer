@@ -46,3 +46,8 @@ use main result group to display benchmark calcs too!!!!!
 put benchmark buttons as part of moves radio group
 may need to update calc trigger stuff but its doable + saves a bunch of space
 add new tab in benchamrk window for calculated results
+
+show % dmg for attacks in bench window
+
+i think its best to keep the same file explorer bench window idea
+but it can be improved
