@@ -51,3 +51,6 @@ show % dmg for attacks in bench window
 
 i think its best to keep the same file explorer bench window idea
 but it can be improved
+
+
+fix sticky moves with new bench radio group functionality

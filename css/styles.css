@@ -4,6 +4,9 @@
     /* --text: #222222; */
     --button-text-color: #222222;
     --border-color: #AAAAAA;
+    --button-checked-background: #FFF;
+    --shadow: #000000;
+    --button-hover: #cfcfcf;
     /* --button-background: linear-gradient(to bottom, #f6f6f6, #d3d3d3); */
 }
 
@@ -18,6 +21,10 @@
 
 header {
     margin-bottom: 10px;
+}
+
+body {
+    padding: 0 4.25em;
 }
 
 .move-cat, .move-type {
@@ -254,18 +261,45 @@ div:has(> .result-move) {
 /* } */
 
 /* { bench window stuff */
-#benchTabs {
+#benchBrowser {
+    display: flex;
+    flex-direction: column;
+    padding: 0 1em;
+}
 
+#benchTabs .btn {
+    margin: -1em 0 0;
+    width: fit-content;
 }
 
 #benchWindow {
     border: 1px solid var(--border-color);
     min-width: 27em;
     max-width: 56em;
-    min-height: 100%;
-    margin: 0 1em;
+    width: 56em;
+    flex-grow: 1;
     resize: both;
     overflow: auto;
+}
+
+#benchTabOptions {
+    position: absolute;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--button-hover);
+    padding: 0.5em;
+    box-shadow: 2px 2px 5px var(--shadow);
+}
+
+#benchTabOptions span {
+    padding: 0.5em;
+    border-radius: 5px;
+}
+
+#benchTabOptions span:hover {
+    background-color: var(--button-checked-background);
+    cursor: pointer;
 }
 
 /* } */

@@ -2,4 +2,7 @@
 :root {
     /* --text: #e4e4e4; */
     --button-text-color: #F9F9F9;
+    --button-checked-background: #000000;
+    --button-hover: #1b1b1b;
+    --shadow: #000000;
 }
