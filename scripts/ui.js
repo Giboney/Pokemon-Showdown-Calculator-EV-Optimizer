@@ -1,7 +1,9 @@
 // ui functions, mostly jQuery stuff
 
 import {
-    capitalize
+    capitalize,
+    collapseBtn,
+    benchTabBtn
 } from './util.js';
 
 //Pokémon 1
@@ -13,26 +15,6 @@ function updateMyTheme() {
         window.matchMedia('(prefers-color-scheme: dark)').matches
 	var darkStyles = document.getElementById('darkStyles')
 	darkStyles.disabled = !isDark
-}
-
-// making the buttons to collapse unnecessary info
-function collapseBtn(name, position = '', side = '') {
-    name = name.toLowerCase()
-    position = position.toLowerCase()
-    side = side.toLowerCase()
-    let sideLetter = !!side ? side.charAt(0).toUpperCase() : ''
-    let btnClass = !!position ? ` btn-${position + (position == 'mid' ? '' : `-${side}`)}` : ''
-
-    return [$('<input>', {
-        id: name + 'Collapse' + sideLetter,
-        class: `collapse-checkbox visually-hidden`,
-        type: 'checkbox'
-    }),
-    $('<label>', {
-        class: 'btn' + btnClass + ' collapse-btn',
-        for: name + 'Collapse' + sideLetter,
-        text: capitalize(name)
-    })]
 }
 
 function getCollapseTarget(id) {
@@ -104,25 +86,6 @@ function createFieldCollapseBtn() {
             'tr:has(#selectSwitchingInstruction)'
         ].join(', ')).toggleClass('hide', $(this).prop('checked'))
     })
-}
-
-function benchTabBtn(name, position) {
-    position = position.toLowerCase()
-    let id = `benchTab${$('#benchTbas > input').length}`
-    return [
-        $('<input>', {
-            id: id,
-            class: 'bench-tab visually-hidden',
-            type: 'radio',
-            name: 'resultMove'
-        }),
-        $('<label>', {
-            class: 'btn btn-' + position,
-            for: id,
-            text: name,
-            title: 'Right click for options.'
-        })
-    ]
 }
 
 function doPanels() {
@@ -210,37 +173,92 @@ function fixCalculationResults() {
     })
 }
 
+// requires #addBenchBtn to exist
+export function addBenchTab() {
+    let num = $('#benchTabs > input').length + 1
+    let name = 'Benchmark ' + num
+    let position = 'top-right'
+    if (num == 1) {
+        position = 'top'
+    } else if (num == 2) {
+        $('#benchTabs > .btn-top').removeClass('btn-top').addClass('btn-top-left')
+    } else if (num > 2) {
+        $('#benchTabs > .btn-top-right').removeClass('btn-top-right').addClass('btn-mid')
+    }
+    let tab = benchTabBtn(name, position)
+    tab[0].prop('checked', true)
+    $('#addBenchBtn').before(tab)
+}
+
+// requires addBenchTab
+export function removeBenchTab() {
+    let index = $('.bench-tab').index($('.bench-tab:checked'))
+    $('.bench-tab:checked, .bench-tab:checked + .btn').remove()
+    let length = $('.bench-tab').length
+    let tab = $('.bench-tab + .btn').eq(index)
+    console.log(tab)
+    //also clear benchmark data and shit
+    if (length == 0) {
+        addBenchTab()
+    } else if (index == 0) {
+        length > 1 ?
+            tab.removeClass('btn-mid').addClass('btn-top-left') :
+            tab.removeClass('btn-top-right').addClass('btn-top')
+    } else if (index == length) {
+        tab = $('.bench-tab + .btn').last()
+        length > 1 ?
+            tab.removeClass('btn-mid').addClass('btn-top-right') :
+            tab.removeClass('btn-top-left').addClass('btn-top')
+    }
+    tab.prev().prop('checked', true)
+}
+
 function createBenchBrowser() {
     //create bench window
-    let benchDiv = $('<div>', {id: 'benchBrowser'}) // add id later if needed
+    let benchDiv = $('<div>', {id: 'benchBrowser'})
     let benchTabs = $('<div>', {id: 'benchTabs'})
     let benchWindow = $('<div>', {id: 'benchWindow'})
     benchDiv.append([benchTabs, benchWindow])
     $('.move-result-subgroup:has(#resultHeaderL)').after(benchDiv)
-    //move % damage to left side for p1
-    for (let i = 1; i <= 4; i++) {
+    for (let i = 1; i <= 4; i++) { // move % damage to left side for p1
         $(`#resultDamageL${i}`).prependTo($(`#resultDamageL${i}`).parent())
     }
-
-    benchTabs.append(benchTabBtn('Benchmark 1', 'top'))
+    // add attack buttons
+    $('.move-result-subgroup:has(#resultHeaderL) .result-move').parent().append(
+        $('<div>', {class: 'add-atk', title: 'Add this attack to the benchmark.'}).append($('<div>', {class: 'plus'}))
+    )
+    $('.move-result-subgroup:has(#resultHeaderR) .result-move').parent().prepend(
+        $('<div>', {class: 'add-atk', title: 'Add this attack to the benchmark.'}).append($('<div>', {class: 'plus'}))
+    )
+    $('#resultMoveL1 + .btn').removeClass('btn-top').addClass('btn-top-left').nextAll('.add-atk').addClass('btn btn-top-right')
+    $('#resultMoveL4 + .btn').removeClass('btn-bottom').addClass('btn-btm-left').nextAll('.add-atk').addClass('btn btn-btm-right')
+    $('#resultMoveR1 + .btn').removeClass('btn-top').addClass('btn-top-right').prevAll('.add-atk').addClass('btn btn-top-left')
+    $('#resultMoveR4 + .btn').removeClass('btn-bottom').addClass('btn-btm-right').prevAll('.add-atk').addClass('btn btn-btm-left')
+    $('.add-atk:not(.btn)').addClass('btn btn-mid')
+    
+    let addBenchBtn = $('<div>', {id: 'addBenchBtn'}).append($('<div>', {class: 'plus'}))
+    benchTabs.append(addBenchBtn)
+    addBenchBtn.on('click', addBenchTab)
+    addBenchTab()
 
     //add tab context menu
     let benchTabOptions = $('<div>', {id: 'benchTabOptions', style: 'display: none'})
     benchTabOptions.append([
         $('<span>', {id: 'benchRename', text: 'Rename'}),
-        $('<span>', {id: 'benchDelete', text: 'Delete'})
+        $('<span>', {id: 'benchCut', text: 'Cut'}),
+        $('<span>', {id: 'benchCopy', text: 'Copy'}),
+        $('<span>', {id: 'benchPaste', text: 'Paste'}) // grey out or hide if no copied bench
     ])
     $('body').prepend(benchTabOptions)
+    $('#benchCut').on('click', removeBenchTab)
 
     benchTabs.on('contextmenu', '.bench-tab + .btn', function(e) {
         e.preventDefault()
-        if (benchTabOptions.is(':hidden')) {
-            benchTabOptions.css({'left': e.pageX, 'top': e.pageY, 'display': 'flex'})
-        } else {
-            benchTabOptions.hide()
-        }
+        $(this).prev('.bench-tab').prop('checked', true)
+        // add click function here?
+        if (benchTabOptions.is(':hidden')) benchTabOptions.css({'display': 'flex'})
+        benchTabOptions.css({'left': e.pageX, 'top': e.pageY})
     })
-
     // clear context menu when clicking elsewhere
     $(document).on('click', function() {
         benchTabOptions.hide()

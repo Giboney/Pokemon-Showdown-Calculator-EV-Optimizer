@@ -1,13 +1,14 @@
 /* variables */
 :root {
     /* default to light theme */
-    /* --text: #222222; */
     --button-text-color: #222222;
     --border-color: #AAAAAA;
-    --button-checked-background: #FFF;
+    --button-checked: #FFF;
     --shadow: #000000;
     --button-hover: #cfcfcf;
-    /* --button-background: linear-gradient(to bottom, #f6f6f6, #d3d3d3); */
+    --button-color: #e3e3e3;
+    --background: #f0f0f0;
+    --button-active: #f2f2f2;
 }
 
 /* { Changes to existing syles from the calc */
@@ -43,11 +44,15 @@ body {
     width: 1.8em;
 }
 
+.move-result-group {
+    margin-top: 0.5em;
+}
+
 .move-result-subgroup:has(#resultHeaderL) {
     text-align: right;
 }
 
-.move-result-subgroup:has(#resultHeaderL) > div > .result-move + .btn {
+.move-result-subgroup:has(#resultHeaderL) > div > .btn {
     margin-right: -3px;
     margin-left: 1em;
 }
@@ -113,6 +118,39 @@ div:has(> .result-move) {
 
 /* { new stuff */
 
+/* { generic */
+.btn-4xwide {
+    width: 11em;
+}
+
+.btn-top-left {
+    border-radius: 8px 0 0 0;
+}
+
+.btn-top-right {
+    border-radius: 0 8px 0 0;
+}
+
+.btn-btm-right {
+    border-radius: 0 0 8px 0;
+}
+
+.btn-btm-left {
+    border-radius: 0 0 0 8px;
+}
+
+.plus {
+    --b: 0.1em;   /* the thickness*/
+    --c: #0000 90deg, var(--button-text-color) 0; /* the coloration */
+    width: 0.7em; /* the size */
+    aspect-ratio: 1;
+    background:
+    conic-gradient(from 90deg at var(--b) var(--b),var(--c)) 
+    calc(100% + var(--b)/2) calc(100% + var(--b)/2)/
+    calc(50%  + var(--b))   calc(50%  + var(--b));
+}
+/* } */
+
 /* { copy rolls */
 #rollsTooltip {
     position: absolute;
@@ -136,28 +174,6 @@ div:has(> .result-move) {
     content: '';
     border: 6px solid transparent;
     border-bottom-color: rgba(0, 0, 0, 0.7);
-}
-/* } */
-
-/* { generic */
-.btn-4xwide {
-    width: 11em;
-}
-
-.btn-top-left {
-    border-radius: 8px 0 0 0;
-}
-
-.btn-top-right {
-    border-radius: 0 8px 0 0;
-}
-
-.btn-btm-right {
-    border-radius: 0 0 8px 0;
-}
-
-.btn-btm-left {
-    border-radius: 0 0 0 8px;
 }
 /* } */
 
@@ -265,20 +281,26 @@ div:has(> .result-move) {
     display: flex;
     flex-direction: column;
     padding: 0 1em;
+    min-width: 53em;
+}
+
+#benchTabs {
+    display: flex;
+    align-items: flex-end;
 }
 
 #benchTabs .btn {
-    margin: -1em 0 0;
+    margin: 0;
     width: fit-content;
+    text-wrap: nowrap;
+    overflow: hidden;
 }
 
 #benchWindow {
     border: 1px solid var(--border-color);
-    min-width: 27em;
-    max-width: 56em;
-    width: 56em;
+    min-width: 100%;
     flex-grow: 1;
-    resize: both;
+    resize: vertical;
     overflow: auto;
 }
 
@@ -287,7 +309,7 @@ div:has(> .result-move) {
     z-index: 100;
     display: flex;
     flex-direction: column;
-    background-color: var(--button-hover);
+    background-color: var(--button-color);
     padding: 0.5em;
     box-shadow: 2px 2px 5px var(--shadow);
 }
@@ -298,8 +320,43 @@ div:has(> .result-move) {
 }
 
 #benchTabOptions span:hover {
-    background-color: var(--button-checked-background);
+    background-color: var(--button-hover);
     cursor: pointer;
+}
+
+#addBenchBtn {
+    margin: 3px;
+    padding: calc(0.3em + 1px);
+    background-color: var(--button-color);
+    border-radius: 7px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+
+#addBenchBtn:hover {
+    background-color: var(--button-hover);
+}
+
+#addBenchBtn:active {
+    background-color: var(--button-checked);
+}
+
+.add-atk {
+    padding: calc(0.3em + 1px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: fit-content;
+}
+
+.move-result-subgroup:has(#resultHeaderL) .add-atk {
+    margin: -1px 0 0 2px !important;
+}
+
+.move-result-subgroup:has(#resultHeaderR) .add-atk {
+    margin: -1px 2px 0 0 !important;
 }
 
 /* } */

@@ -35,7 +35,7 @@ pokemon item slot in optimizer
 maybe add option to put heal turns into benchmark window but i suspect it will be too crowded
 maybe try to improve benchmark window ui
 Draining moves
-consider using target pokemon like syl calc
+consider using target pokemon like syl calc (not possible)
 show attack count in benchmark window
 nameable benchmarks
 make benchmark buttons narrower (fit more without dropdown)
@@ -43,14 +43,14 @@ filter sets by tier
 champions and other gens support stuff
 
 use main result group to display benchmark calcs too!!!!!
-put benchmark buttons as part of moves radio group
-may need to update calc trigger stuff but its doable + saves a bunch of space
 add new tab in benchamrk window for calculated results
 
 show % dmg for attacks in bench window
 
 i think its best to keep the same file explorer bench window idea
 but it can be improved
-
-
-fix sticky moves with new bench radio group functionality
+ctrl z maybe
+copy paste benches
+draggable bench tabs maybe
+copy paste moves
+shift + click & ctrl + click for moves

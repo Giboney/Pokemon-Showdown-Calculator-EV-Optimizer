@@ -42,17 +42,17 @@ export class Benchmark {
         hpmods = new HPMods,
         damage = {},
         evs = {hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0},
-        html = ''
+        jquery = []
     ) {
         this.attacks = attacks
         this.hpmods = hpmods
         this.damage = damage
         this.evs = evs
-        this.html = html
+        this.jquery = jquery
     }
 }
 
-export class pSet {
+export class pSet { 
     constructor(
         benchmarks = [],
         forms = [], //store all forms here ie Megas, Aegislash
