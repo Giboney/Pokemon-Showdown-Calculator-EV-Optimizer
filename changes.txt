@@ -54,3 +54,5 @@ copy paste benches
 draggable bench tabs maybe
 copy paste moves
 shift + click & ctrl + click for moves
+
+draining moves later

@@ -1,11 +1,11 @@
 /* variables */
 :root {
-    /* --text: #e4e4e4; */
     --button-text-color: #F9F9F9;
     --button-checked: #000000;
     --button-hover: #3e4149;
-    --shadow: #000000;
+    /* --shadow: #000000; */
     --button-color: #353535;
     --background: #1b1b1b;
     --button-active: #2b2c31;
+    --fieldset-color: #2a2a2a;
 }

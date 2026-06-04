@@ -37,6 +37,24 @@ export function collapseBtn(name, position = '', side = '') {
     })]
 }
 
+export function getCollapseTarget(id) {
+    switch (id.slice(0,-9)) {
+        case 'type':
+            return $(`#${id}`).parent().siblings().has('.type1')
+        case 'stats':
+            return $(`#${id}`).parent().siblings().has('table')
+        case 'item':
+            return $(`#${id}`).parent().siblings().has('.nature')
+        case 'health':
+            return $(`#${id}`).parent().siblings().has('.current-hp')
+        case 'moves':
+            return $(`#${id}`).parent().siblings().has('.move-bp')
+
+        default:
+            return false
+    }
+}
+
 export function benchTabBtn(name, position) {
     position = position.toLowerCase()
     let id = `benchTab${$('#benchTabs > input').length + 1}`

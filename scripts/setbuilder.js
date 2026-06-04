@@ -2,7 +2,7 @@
 
 import { calcStatEVs } from './util.js';
 
-export class Attack {
+class Attack {
     constructor(
         attacker,
         defender,
@@ -20,7 +20,7 @@ export class Attack {
     }
 }
 
-export class HPMods {
+class HPMods {
     constructor(
         healing = {},
         damage = {},
@@ -36,12 +36,12 @@ export class HPMods {
     }
 }
 
-export class Benchmark {
+class Benchmark {
     constructor(
-        attacks = [], 
+        attacks = [],
         hpmods = new HPMods,
         damage = {},
-        evs = {hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0},
+        evs = {}, // used for ko chance and displayed calcs
         jquery = []
     ) {
         this.attacks = attacks
@@ -52,11 +52,11 @@ export class Benchmark {
     }
 }
 
-export class pSet { 
+class pSet {
     constructor(
         benchmarks = [],
         forms = [], //store all forms here ie Megas, Aegislash
-        evs = {hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0},
+        evs = {}, // used for optimized ev spread
         nature = ''
     ) {
         this.benchmarks = benchmarks
@@ -80,19 +80,16 @@ export class pSet {
             })
         }
         if (evs != this.evs[statID]) this.evs[statID] = evs
-        if (!statChanged) {
-            return false
-        } else {
-            // update benchmarks with new evs
-            this.benchmarks.forEach((benchmark) => {
-                benchmark.attacks.forEach((attack) => {
-                    attack.draining ?
-                        attack.attacker.evs[statID] = evs :
-                        attack.defender.evs[statID] = evs
-                })
+        if (!statChanged) return false
+        // update benchmarks with new evs
+        this.benchmarks.forEach((benchmark) => {
+            benchmark.attacks.forEach((attack) => {
+                attack.draining ?
+                    attack.attacker.evs[statID] = evs :
+                    attack.defender.evs[statID] = evs
             })
-            return true
-        }
+        })
+        return true
     }
 
     evDown(statID) {
@@ -109,22 +106,56 @@ export class pSet {
             })
         }
         if (evs != this.evs[statID]) this.evs[statID] = evs
-        if (!statChanged) {
-            return false
-        } else {
-            // update benchmarks with new evs
-            this.benchmarks.forEach((benchmark) => {
-                benchmark.attacks.forEach((attack) => {
-                    attack.draining ?
-                        attack.attacker.evs[statID] = evs :
-                        attack.defender.evs[statID] = evs
-                })
+        if (!statChanged) return false
+        // update benchmarks with new evs
+        this.benchmarks.forEach((benchmark) => {
+            benchmark.attacks.forEach((attack) => {
+                attack.draining ?
+                    attack.attacker.evs[statID] = evs :
+                    attack.defender.evs[statID] = evs
             })
-            return true
-        }
+        })
+        return true
+    }
+
+    newBench() {
+        this.benchmarks.push(new Benchmark)
+        console.log(this)
+    }
+
+    removeBench(index) {
+        this.benchmarks.splice(index, 1)
+        console.log(this)
+    }
+    
+    addAtk(bench, attacker, defender, move, field) {
+        let b = this.benchmarks[bench]
+        b.attacks.push(new Attack(
+            attacker,
+            defender,
+            move,
+            field
+        ))
+        !b.evs ? b.evs = defender.evs : defender.evs = b.evs
+        let result = calc.calculate(gen, attacker, defender, move, field)
+        let chance = 1.0 / result.damage.length // account for crit and acc here as needed
+        result.damage.forEach((roll) => {
+            b.attacks.at(-1).damage[roll] = chance
+        })
+        let desc = result.fullDesc(notation, false)
+        desc = desc.replaceAll(
+            /[0-9]+ hp |\/ |[0-9]+ atk |[0-9]+ def |[0-9]+ spa |[0-9]+ spd |[0-9]+ spe|[0-9]+ ivs /gi,
+            ''
+        )
+        desc = desc.slice(0,desc.indexOf(':') + 2) + result.moveDesc(notation)
+        b.jquery.push($('<li>', {text: desc}))
+        console.log(this)
+        console.log(result)
+        return b.jquery
     }
 }
 
+export const pokeSet = new pSet()
 
 let time = Date.now()
 

@@ -9,6 +9,7 @@
     --button-color: #e3e3e3;
     --background: #f0f0f0;
     --button-active: #f2f2f2;
+    --fieldset-color: #F1F4F9;
 }
 
 /* { Changes to existing syles from the calc */
@@ -26,6 +27,9 @@ header {
 
 body {
     padding: 0 4.25em;
+    /* used for li marker background because ts is cursed */
+    position: relative;
+    z-index: -1; 
 }
 
 .move-cat, .move-type {
@@ -294,14 +298,16 @@ div:has(> .result-move) {
     width: fit-content;
     text-wrap: nowrap;
     overflow: hidden;
+    box-shadow: 0.5px 0 2px rgba(255, 255, 255, 0.45);
 }
 
 #benchWindow {
     border: 1px solid var(--border-color);
     min-width: 100%;
+    min-height: 8em;
     flex-grow: 1;
     resize: vertical;
-    overflow: auto;
+    overflow-y: auto;
 }
 
 #benchTabOptions {
@@ -343,6 +349,9 @@ div:has(> .result-move) {
     background-color: var(--button-checked);
 }
 
+/* } */
+
+/* { add attacks and stuff */
 .add-atk {
     padding: calc(0.3em + 1px);
     display: flex;
@@ -358,6 +367,40 @@ div:has(> .result-move) {
 .move-result-subgroup:has(#resultHeaderR) .add-atk {
     margin: -1px 2px 0 0 !important;
 }
+
+#atkList {
+    margin: 0;
+    padding-left: 1.6em;
+}
+
+#atkList li {
+    padding: 0.2em;
+    position: relative;
+}
+
+#atkList li:before {
+    position: absolute;
+    content: '';
+    display: inline-block;
+    width: 1.6em;
+    height: 1.6em;
+    top: 0;
+    left: -1.6em;
+    z-index: -1;
+}
+
+#atkList li:nth-child(odd), #atkList li:nth-child(odd):before {
+    background-color: var(--fieldset-color);
+}
+
+#atkList li:nth-child(even), #atkList li:nth-child(even):before {
+    background-color: var(--button-color);
+}
+
+#atkList li:hover, #atkList li:hover:before {
+    background-color: var(--button-hover);
+}
+/* } */
 
 /* } */
 

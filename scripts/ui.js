@@ -3,13 +3,17 @@
 import {
     capitalize,
     collapseBtn,
+    getCollapseTarget,
     benchTabBtn
 } from './util.js';
+import {
+    pokeSet
+} from './setbuilder.js';
 
 //Pokémon 1
 
 // fixing dark theme issues
-function updateMyTheme() {
+export function updateMyTheme() {
 	var isDark = prefersDarkTheme ?
         prefersDarkTheme === 'true' :
         window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -17,25 +21,7 @@ function updateMyTheme() {
 	darkStyles.disabled = !isDark
 }
 
-function getCollapseTarget(id) {
-    switch (id.slice(0,-9)) {
-        case 'type':
-            return $(`#${id}`).parent().siblings().has('.type1')
-        case 'stats':
-            return $(`#${id}`).parent().siblings().has('table')
-        case 'item':
-            return $(`#${id}`).parent().siblings().has('.nature')
-        case 'health':
-            return $(`#${id}`).parent().siblings().has('.current-hp')
-        case 'moves':
-            return $(`#${id}`).parent().siblings().has('.move-bp')
-
-        default:
-            return false
-    }
-}
-
-function createCollapsePanels() {
+export function createCollapsePanels() {
     let collapsePanelL = $('<div>', {id: 'collapsePanelL', class: 'collapse-panel collapse-left'})
     let collapsePanelR = $('<div>', {id: 'collapsePanelR', class: 'collapse-panel collapse-right'})
     collapsePanelL.append(
@@ -60,7 +46,6 @@ function createCollapsePanels() {
     $('.collapse-checkbox').on('change', function() {
         let target = getCollapseTarget($(this)[0].id)
         if (target) target.toggleClass('hide', $(this).prop('checked'))
-
     })
 }
 
@@ -69,7 +54,7 @@ function createCollapsePanels() {
 // use jquery .hide()
 //be careful tho it might unhide stuff in other gens
 // need to change position depending on gen
-function createFieldCollapseBtn() {
+export function createFieldCollapseBtn() {
     $('div:has(> #magicRoomInstruction)').css('display', '')
     $('.field-info').append(collapseBtn('field'))
     $('#fieldCollapse').on('change', function() {
@@ -88,7 +73,7 @@ function createFieldCollapseBtn() {
     })
 }
 
-function doPanels() {
+export function doPanels() {
     // create optimizer panel
     let optimizerPanel = $('<fieldset>', {id: 'optimizerPanel'})
     optimizerPanel.append($('<legend>', {text: 'Optimizer'}))
@@ -100,7 +85,7 @@ function doPanels() {
     $('.panel').appendTo(calcPanelsDiv)
 }
 
-function fixCalculationResults() {
+export function fixCalculationResults() {
     $(".result-move").off('change')
     // adjusted so that each hit has a newline, and parenthesis are included
     displayDamageHits = function(damage) {
@@ -174,8 +159,8 @@ function fixCalculationResults() {
 }
 
 // requires #addBenchBtn to exist
-export function addBenchTab() {
-    let num = $('#benchTabs > input').length + 1
+function addBenchTab() {
+    let num = $('#benchTabs > .bench-tab').length + 1
     let name = 'Benchmark ' + num
     let position = 'top-right'
     if (num == 1) {
@@ -188,16 +173,17 @@ export function addBenchTab() {
     let tab = benchTabBtn(name, position)
     tab[0].prop('checked', true)
     $('#addBenchBtn').before(tab)
+    pokeSet.newBench()
 }
 
 // requires addBenchTab
-export function removeBenchTab() {
+function removeBenchTab() {
     let index = $('.bench-tab').index($('.bench-tab:checked'))
     $('.bench-tab:checked, .bench-tab:checked + .btn').remove()
+    //also clear benchmark data and shit
+    pokeSet.removeBench(index)
     let length = $('.bench-tab').length
     let tab = $('.bench-tab + .btn').eq(index)
-    console.log(tab)
-    //also clear benchmark data and shit
     if (length == 0) {
         addBenchTab()
     } else if (index == 0) {
@@ -213,34 +199,33 @@ export function removeBenchTab() {
     tab.prev().prop('checked', true)
 }
 
-function createBenchBrowser() {
-    //create bench window
-    let benchDiv = $('<div>', {id: 'benchBrowser'})
-    let benchTabs = $('<div>', {id: 'benchTabs'})
-    let benchWindow = $('<div>', {id: 'benchWindow'})
-    benchDiv.append([benchTabs, benchWindow])
-    $('.move-result-subgroup:has(#resultHeaderL)').after(benchDiv)
-    for (let i = 1; i <= 4; i++) { // move % damage to left side for p1
-        $(`#resultDamageL${i}`).prependTo($(`#resultDamageL${i}`).parent())
-    }
-    // add attack buttons
+function addAtkBtns() {
     $('.move-result-subgroup:has(#resultHeaderL) .result-move').parent().append(
-        $('<div>', {class: 'add-atk', title: 'Add this attack to the benchmark.'}).append($('<div>', {class: 'plus'}))
+        $('<div>', {class: 'left add-atk', title: 'Add this attack to the benchmark.'}).append($('<div>', {class: 'plus'}))
     )
     $('.move-result-subgroup:has(#resultHeaderR) .result-move').parent().prepend(
-        $('<div>', {class: 'add-atk', title: 'Add this attack to the benchmark.'}).append($('<div>', {class: 'plus'}))
+        $('<div>', {class: 'right add-atk', title: 'Add this attack to the benchmark.'}).append($('<div>', {class: 'plus'}))
     )
     $('#resultMoveL1 + .btn').removeClass('btn-top').addClass('btn-top-left').nextAll('.add-atk').addClass('btn btn-top-right')
     $('#resultMoveL4 + .btn').removeClass('btn-bottom').addClass('btn-btm-left').nextAll('.add-atk').addClass('btn btn-btm-right')
     $('#resultMoveR1 + .btn').removeClass('btn-top').addClass('btn-top-right').prevAll('.add-atk').addClass('btn btn-top-left')
     $('#resultMoveR4 + .btn').removeClass('btn-bottom').addClass('btn-btm-right').prevAll('.add-atk').addClass('btn btn-btm-left')
     $('.add-atk:not(.btn)').addClass('btn btn-mid')
-    
-    let addBenchBtn = $('<div>', {id: 'addBenchBtn'}).append($('<div>', {class: 'plus'}))
-    benchTabs.append(addBenchBtn)
-    addBenchBtn.on('click', addBenchTab)
-    addBenchTab()
 
+    $('.add-atk').on('click', function() {
+        let bench = $('.bench-tab').index($('.bench-tab:checked'))
+        let left = $(this).hasClass('left')
+        let attacker = createPokemon($($(`#p${left ? 1 : 2}`)))
+        let defender = createPokemon($($(`#p${left ? 2 : 1}`)))
+        checkStatBoost(attacker, defender)
+        let move = attacker.moves[$(this).parent().index() - 1]
+        let field = createField()
+        if (!left) field.clone().swap()
+        $('#atkList').append(pokeSet.addAtk(bench, attacker, defender, move, field))
+    })
+}
+
+function benchTabContextMenu() {
     //add tab context menu
     let benchTabOptions = $('<div>', {id: 'benchTabOptions', style: 'display: none'})
     benchTabOptions.append([
@@ -252,7 +237,7 @@ function createBenchBrowser() {
     $('body').prepend(benchTabOptions)
     $('#benchCut').on('click', removeBenchTab)
 
-    benchTabs.on('contextmenu', '.bench-tab + .btn', function(e) {
+    $('#benchTabs').on('contextmenu', '.bench-tab + .btn', function(e) {
         e.preventDefault()
         $(this).prev('.bench-tab').prop('checked', true)
         // add click function here?
@@ -264,6 +249,28 @@ function createBenchBrowser() {
         benchTabOptions.hide()
     })
 }
+
+export function createBenchBrowser() {
+    //create bench window
+    let benchDiv = $('<div>', {id: 'benchBrowser', title: 'Select a benchmark to show detailed results.'})
+    let benchTabs = $('<div>', {id: 'benchTabs'})
+    let benchWindow = $('<div>', {id: 'benchWindow'}).append($('<ol>', {id: 'atkList'}))
+    benchDiv.append([benchTabs, benchWindow])
+    $('.move-result-subgroup:has(#resultHeaderL)').after(benchDiv)
+    for (let i = 1; i <= 4; i++) { // move % damage to left side for p1
+        $(`#resultDamageL${i}`).prependTo($(`#resultDamageL${i}`).parent())
+    }
+    
+    let addBenchBtn = $('<div>', {id: 'addBenchBtn'}).append($('<div>', {class: 'plus'}))
+    benchTabs.append(addBenchBtn)
+    addBenchBtn.on('click', addBenchTab)
+    addBenchTab()
+
+    benchTabContextMenu()
+    addAtkBtns()
+}
+
+
 
 
 
