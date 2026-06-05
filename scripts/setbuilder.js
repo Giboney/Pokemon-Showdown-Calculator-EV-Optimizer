@@ -144,7 +144,7 @@ class pSet {
         })
         let desc = result.fullDesc(notation, false)
         desc = desc.replaceAll(
-            /[0-9]+ hp |\/ |[0-9]+ atk |[0-9]+ def |[0-9]+ spa |[0-9]+ spd |[0-9]+ spe|[0-9]+ ivs /gi,
+            /([0-9]+)( hp |(\+?-?)( atk | def | spa | spd | spe))|\/ |with an ally's |through |boosted /gi,
             ''
         )
         desc = desc.slice(0,desc.indexOf(':') + 2) + result.moveDesc(notation)

@@ -305,9 +305,10 @@ div:has(> .result-move) {
     border: 1px solid var(--border-color);
     min-width: 100%;
     min-height: 8em;
+    height: 8em;
     flex-grow: 1;
     resize: vertical;
-    overflow-y: auto;
+    overflow: auto;
 }
 
 #benchTabOptions {
@@ -371,11 +372,15 @@ div:has(> .result-move) {
 #atkList {
     margin: 0;
     padding-left: 1.6em;
+    display: flex;
+    width: fit-content;
+    flex-direction: column;
 }
 
 #atkList li {
     padding: 0.2em;
     position: relative;
+    text-wrap: nowrap;
 }
 
 #atkList li:before {

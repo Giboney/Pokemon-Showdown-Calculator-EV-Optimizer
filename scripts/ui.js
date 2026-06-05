@@ -158,6 +158,12 @@ export function fixCalculationResults() {
     })
 }
 
+function changeBenchTab() {
+    let index = $('.bench-tab').index($('.bench-tab:checked'))
+    $('#atkList').empty()
+    $('#atkList').append(pokeSet.benchmarks[index].jquery)
+}
+
 // requires #addBenchBtn to exist
 function addBenchTab() {
     let num = $('#benchTabs > .bench-tab').length + 1
@@ -171,8 +177,9 @@ function addBenchTab() {
         $('#benchTabs > .btn-top-right').removeClass('btn-top-right').addClass('btn-mid')
     }
     let tab = benchTabBtn(name, position)
-    tab[0].prop('checked', true)
+    tab[0].on('change', changeBenchTab).prop('checked', true)
     $('#addBenchBtn').before(tab)
+    $('#atkList').empty()
     pokeSet.newBench()
 }
 
@@ -197,9 +204,11 @@ function removeBenchTab() {
             tab.removeClass('btn-top-left').addClass('btn-top')
     }
     tab.prev().prop('checked', true)
+    changeBenchTab()
 }
 
 function addAtkBtns() {
+    //adding and styling the buttons
     $('.move-result-subgroup:has(#resultHeaderL) .result-move').parent().append(
         $('<div>', {class: 'left add-atk', title: 'Add this attack to the benchmark.'}).append($('<div>', {class: 'plus'}))
     )
