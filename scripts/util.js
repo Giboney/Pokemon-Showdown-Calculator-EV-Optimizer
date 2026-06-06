@@ -73,3 +73,36 @@ export function benchTabBtn(name, position) {
         })
     ]
 }
+
+export function toggleSelectedAtk(e) {
+    e.preventDefault()
+    let element = $(e.target)
+    let ctrl = e.ctrlKey
+    let shift = e.shiftKey
+    let right = e.type == 'contextmenu'
+    console.log(e)
+    console.log(element)
+    if (!element.hasClass('.selected-atk')) {
+        if (!ctrl) $('.selected-atk').removeClass('selected-atk')
+        if (shift && !right) {
+            let start = $('.last-selected-atk').index()
+            let end = element.index()
+            let atks = $('.bench-atk')
+            if (start > end) [start, end] = [end, start]
+            for (let i = start; i <= end; i++) {
+                atks.eq(i).addClass('selected-atk')
+            }
+        } else {
+            element.addClass('selected-atk')
+        }
+        $('.last-selected-atk').removeClass('last-selected-atk')
+        element.addClass('last-selected-atk')
+    
+        // if ctrl is held, do not clear selected, else clear selected and reapply
+        // use last-selected to deteremine which atks to highlight
+        // need to clear these classes on bench change
+        // need to clear when clicking outside the window or just not on an atk
+    } else if (ctrl) {
+        element.removeClass('selected-atk')
+    }
+}

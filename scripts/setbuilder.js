@@ -1,6 +1,9 @@
 // the main setbuilding and optimization class framework
 
-import { calcStatEVs } from './util.js';
+import {
+    calcStatEVs,
+    toggleSelectedAtk
+} from './util.js';
 
 class Attack {
     constructor(
@@ -55,7 +58,7 @@ class Benchmark {
 class pSet {
     constructor(
         benchmarks = [],
-        forms = [], //store all forms here ie Megas, Aegislash
+        forms = [], // store all forms here ie Megas, Aegislash
         evs = {}, // used for optimized ev spread
         nature = ''
     ) {
@@ -136,22 +139,33 @@ class pSet {
             move,
             field
         ))
+
         !b.evs ? b.evs = defender.evs : defender.evs = b.evs
         let result = calc.calculate(gen, attacker, defender, move, field)
         let chance = 1.0 / result.damage.length // account for crit and acc here as needed
         result.damage.forEach((roll) => {
             b.attacks.at(-1).damage[roll] = chance
         })
+
         let desc = result.fullDesc(notation, false)
         desc = desc.replaceAll(
             /([0-9]+)( hp |(\+?-?)( atk | def | spa | spd | spe))|\/ |with an ally's |through |boosted /gi,
             ''
         )
         desc = desc.slice(0,desc.indexOf(':') + 2) + result.moveDesc(notation)
-        b.jquery.push($('<li>', {text: desc}))
+        let element = $('<li>', {class: 'bench-atk', text: desc}).on('mousedown', toggleSelectedAtk)
+        b.jquery.push(element)
+
         console.log(this)
         console.log(result)
-        return b.jquery
+        return element
+    }
+
+    removeAtk(bench, atk) {
+        let b = this.benchmarks[bench]
+        b.attacks.splice(atk,1)
+        b.jquery.splice(atk,1)
+        console.log(this)
     }
 }
 

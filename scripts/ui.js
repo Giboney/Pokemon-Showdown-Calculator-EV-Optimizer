@@ -4,7 +4,8 @@ import {
     capitalize,
     collapseBtn,
     getCollapseTarget,
-    benchTabBtn
+    benchTabBtn,
+    toggleSelectedAtk
 } from './util.js';
 import {
     pokeSet
@@ -234,10 +235,10 @@ function addAtkBtns() {
     })
 }
 
+//maybe try consolidating these context meny functions
 function benchTabContextMenu() {
     //add tab context menu
-    let benchTabOptions = $('<div>', {id: 'benchTabOptions', style: 'display: none'})
-    benchTabOptions.append([
+    let benchTabOptions = $('<div>', {id: 'benchTabOptions', class: 'context-menu', style: 'display: none'}).append([
         $('<span>', {id: 'benchRename', text: 'Rename'}),
         $('<span>', {id: 'benchCut', text: 'Cut'}),
         $('<span>', {id: 'benchCopy', text: 'Copy'}),
@@ -250,12 +251,36 @@ function benchTabContextMenu() {
         e.preventDefault()
         $(this).prev('.bench-tab').prop('checked', true)
         // add click function here?
+        $('#benchAtkOptions').hide()
         if (benchTabOptions.is(':hidden')) benchTabOptions.css({'display': 'flex'})
         benchTabOptions.css({'left': e.pageX, 'top': e.pageY})
     })
-    // clear context menu when clicking elsewhere
-    $(document).on('click', function() {
-        benchTabOptions.hide()
+}
+
+function removeAtks() {
+    let bench = $('.bench-tab').index($('.bench-tab:checked'))
+    $('.selected-atk').each(function(i, e) {
+        let atk = $('#atkList').index(e)
+        pokeSet.removeAtk(bench, atk)
+    })
+    $('.selected-atk').remove()
+}
+
+function benchAtkContextMenu() {
+    let benchAtkOptions = $('<div>', {id: 'benchAtkOptions', class: 'context-menu', style: 'display: none'}).append([
+        $('<span>', {id: 'atkCut', text: 'Cut'}),
+        $('<span>', {id: 'atkCopy', text: 'Copy'}),
+        $('<span>', {id: 'atkPaste', text: 'Paste'})
+    ])
+    $('body').prepend(benchAtkOptions)
+    $('#atkCut').on('click', removeAtks)
+
+    $('#benchWindow').on('contextmenu', '.bench-atk', function(e) {
+        //stuff here
+        toggleSelectedAtk(e)
+        $('#benchTabOptions').hide()
+        if (benchAtkOptions.is(':hidden')) benchAtkOptions.css({'display': 'flex'})
+        benchAtkOptions.css({'left': e.pageX, 'top': e.pageY})
     })
 }
 
@@ -273,10 +298,15 @@ export function createBenchBrowser() {
     let addBenchBtn = $('<div>', {id: 'addBenchBtn'}).append($('<div>', {class: 'plus'}))
     benchTabs.append(addBenchBtn)
     addBenchBtn.on('click', addBenchTab)
-    addBenchTab()
-
-    benchTabContextMenu()
+    addBenchTab() // add one bench tab to start with
     addAtkBtns()
+    benchTabContextMenu()
+    benchAtkContextMenu()
+    // clear context menus when clicking elsewhere
+    $(document).on('click', function() {
+        $('#benchTabOptions').hide()
+        $('#benchAtkOptions').hide()
+    })
 }
 
 

@@ -10,6 +10,7 @@
     --background: #f0f0f0;
     --button-active: #f2f2f2;
     --fieldset-color: #F1F4F9;
+    --background-top: rgba(77, 93, 140, 0.6);
 }
 
 /* { Changes to existing syles from the calc */
@@ -152,6 +153,27 @@ div:has(> .result-move) {
     conic-gradient(from 90deg at var(--b) var(--b),var(--c)) 
     calc(100% + var(--b)/2) calc(100% + var(--b)/2)/
     calc(50%  + var(--b))   calc(50%  + var(--b));
+}
+
+
+.context-menu {
+    position: absolute;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--button-color);
+    padding: 0.5em;
+    box-shadow: 2px 2px 5px var(--shadow);
+}
+
+.context-menu span {
+    padding: 0.5em;
+    border-radius: 5px;
+}
+
+.context-menu span:hover {
+    background-color: var(--button-hover);
+    cursor: pointer;
 }
 /* } */
 
@@ -306,29 +328,10 @@ div:has(> .result-move) {
     min-width: 100%;
     min-height: 8em;
     height: 8em;
+    max-height: fit-content;
     flex-grow: 1;
     resize: vertical;
     overflow: auto;
-}
-
-#benchTabOptions {
-    position: absolute;
-    z-index: 100;
-    display: flex;
-    flex-direction: column;
-    background-color: var(--button-color);
-    padding: 0.5em;
-    box-shadow: 2px 2px 5px var(--shadow);
-}
-
-#benchTabOptions span {
-    padding: 0.5em;
-    border-radius: 5px;
-}
-
-#benchTabOptions span:hover {
-    background-color: var(--button-hover);
-    cursor: pointer;
 }
 
 #addBenchBtn {
@@ -375,6 +378,7 @@ div:has(> .result-move) {
     display: flex;
     width: fit-content;
     flex-direction: column;
+    min-width: calc(100% - 1.6em);
 }
 
 #atkList li {
@@ -404,6 +408,10 @@ div:has(> .result-move) {
 
 #atkList li:hover, #atkList li:hover:before {
     background-color: var(--button-hover);
+}
+
+.selected-atk, .selected-atk:before {
+    background-color: var(--background-top) !important;
 }
 /* } */
 
