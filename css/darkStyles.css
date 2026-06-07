@@ -8,4 +8,6 @@
     --background: #1b1b1b;
     --button-active: #2b2c31;
     --fieldset-color: #2a2a2a;
+    --selected-atk: rgba(77, 93, 140, 0.6);
+    --selected-atk-hover: rgba(77, 93, 140, 0.5);
 }

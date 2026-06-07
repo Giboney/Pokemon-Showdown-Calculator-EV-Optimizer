@@ -10,7 +10,8 @@
     --background: #f0f0f0;
     --button-active: #f2f2f2;
     --fieldset-color: #F1F4F9;
-    --background-top: rgba(77, 93, 140, 0.6);
+    --selected-atk: rgba(189, 214, 235, 0.6);
+    --selected-atk-hover: rgba(189, 214, 235, 0.4);
 }
 
 /* { Changes to existing syles from the calc */
@@ -387,6 +388,10 @@ div:has(> .result-move) {
     text-wrap: nowrap;
 }
 
+#atkList li:hover {
+    cursor: default
+}
+
 #atkList li:before {
     position: absolute;
     content: '';
@@ -411,7 +416,11 @@ div:has(> .result-move) {
 }
 
 .selected-atk, .selected-atk:before {
-    background-color: var(--background-top) !important;
+    background-color: var(--selected-atk) !important;
+}
+
+.selected-atk:hover, .selected-atk:hover:before {
+    background-color: var(--selected-atk-hover) !important;
 }
 /* } */
 

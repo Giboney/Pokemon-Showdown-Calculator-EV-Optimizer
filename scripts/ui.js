@@ -161,6 +161,8 @@ export function fixCalculationResults() {
 
 function changeBenchTab() {
     let index = $('.bench-tab').index($('.bench-tab:checked'))
+    $('.selected-atk').removeClass('selected-atk')
+    $('.last-selected-atk').removeClass('last-selected-atk')
     $('#atkList').empty()
     $('#atkList').append(pokeSet.benchmarks[index].jquery)
 }
@@ -260,10 +262,11 @@ function benchTabContextMenu() {
 function removeAtks() {
     let bench = $('.bench-tab').index($('.bench-tab:checked'))
     $('.selected-atk').each(function(i, e) {
-        let atk = $('#atkList').index(e)
+        let atk = $('.bench-atk').index(e)
+        console.log(atk)
         pokeSet.removeAtk(bench, atk)
+        $(e).remove()
     })
-    $('.selected-atk').remove()
 }
 
 function benchAtkContextMenu() {
@@ -276,8 +279,8 @@ function benchAtkContextMenu() {
     $('#atkCut').on('click', removeAtks)
 
     $('#benchWindow').on('contextmenu', '.bench-atk', function(e) {
+        e.preventDefault()
         //stuff here
-        toggleSelectedAtk(e)
         $('#benchTabOptions').hide()
         if (benchAtkOptions.is(':hidden')) benchAtkOptions.css({'display': 'flex'})
         benchAtkOptions.css({'left': e.pageX, 'top': e.pageY})
@@ -288,7 +291,9 @@ export function createBenchBrowser() {
     //create bench window
     let benchDiv = $('<div>', {id: 'benchBrowser', title: 'Select a benchmark to show detailed results.'})
     let benchTabs = $('<div>', {id: 'benchTabs'})
-    let benchWindow = $('<div>', {id: 'benchWindow'}).append($('<ol>', {id: 'atkList'}))
+    let benchWindow = $('<div>', {id: 'benchWindow'}).append(
+        $('<ol>', {id: 'atkList'}).on('mousedown', '.bench-atk', toggleSelectedAtk)
+    )
     benchDiv.append([benchTabs, benchWindow])
     $('.move-result-subgroup:has(#resultHeaderL)').after(benchDiv)
     for (let i = 1; i <= 4; i++) { // move % damage to left side for p1

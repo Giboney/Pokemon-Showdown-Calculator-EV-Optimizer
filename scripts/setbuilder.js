@@ -153,7 +153,7 @@ class pSet {
             ''
         )
         desc = desc.slice(0,desc.indexOf(':') + 2) + result.moveDesc(notation)
-        let element = $('<li>', {class: 'bench-atk', text: desc}).on('mousedown', toggleSelectedAtk)
+        let element = $('<li>', {class: 'bench-atk', text: desc})
         b.jquery.push(element)
 
         console.log(this)
