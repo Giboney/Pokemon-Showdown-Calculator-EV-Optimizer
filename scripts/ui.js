@@ -76,9 +76,20 @@ export function createFieldCollapseBtn() {
 
 export function doPanels() {
     // create optimizer panel
-    let optimizerPanel = $('<fieldset>', {id: 'optimizerPanel'})
-    optimizerPanel.append($('<legend>', {text: 'Optimizer'}))
+    let optimizerPanel = $('<fieldset>', {id: 'optimizerPanel'}).append([
+        $('<legend>', {text: 'Optimizer'}),
+        $('<button>', {id: 'optimizeButton', text: 'Optimize'})
+    ])
     $('.main-result-group').after(optimizerPanel)
+    $('#optimizeButton').on('click', function() {
+        // calculate spreads
+        pokeSet.getSpreads()
+        // create output tab
+        
+        // for testing
+        let index = $('.bench-tab').index($('.bench-tab:checked'))
+        $('#mainResult').text($('.bench-tab:checked + .btn').text() + pokeSet.benchmarks[index].result)
+    })
     // fixing base calc panel positioning (it was off before)
     // calcPanels div is display flex
     let calcPanelsDiv = $('<div>', {id: 'calcPanels'})
@@ -237,7 +248,7 @@ function addAtkBtns() {
     })
 }
 
-//maybe try consolidating these context meny functions
+//maybe try consolidating these context menu functions
 function benchTabContextMenu() {
     //add tab context menu
     let benchTabOptions = $('<div>', {id: 'benchTabOptions', class: 'context-menu', style: 'display: none'}).append([
@@ -252,6 +263,7 @@ function benchTabContextMenu() {
     $('#benchTabs').on('contextmenu', '.bench-tab + .btn', function(e) {
         e.preventDefault()
         $(this).prev('.bench-tab').prop('checked', true)
+        changeBenchTab()
         // add click function here?
         $('#benchAtkOptions').hide()
         if (benchTabOptions.is(':hidden')) benchTabOptions.css({'display': 'flex'})

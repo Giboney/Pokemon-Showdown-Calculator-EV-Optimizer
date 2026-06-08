@@ -309,6 +309,7 @@ div:has(> .result-move) {
     flex-direction: column;
     padding: 0 1em;
     min-width: 53em;
+    max-width: 53em;
 }
 
 #benchTabs {
@@ -318,7 +319,7 @@ div:has(> .result-move) {
 
 #benchTabs .btn {
     margin: 0;
-    width: fit-content;
+    width: 9.6em;
     text-wrap: nowrap;
     overflow: hidden;
     box-shadow: 0.5px 0 2px rgba(255, 255, 255, 0.45);

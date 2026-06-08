@@ -57,7 +57,14 @@ export function getCollapseTarget(id) {
 
 export function benchTabBtn(name, position) {
     position = position.toLowerCase()
-    let id = `benchTab${$('#benchTabs > input').length + 1}`
+    let id = `benchTab${$('.bench-tab').length + 1}`
+    if ($(`#${id}`).length) {
+        let dupe = 1
+        while ($(`#${id}-${dupe}`).length) {
+            dupe++
+        }
+        id += `-${dupe}`
+    }
     return [
         $('<input>', {
             id: id,
@@ -106,5 +113,27 @@ export function toggleSelectedAtk(e) {
             $('.last-selected-atk').removeClass('last-selected-atk')
             element.addClass('last-selected-atk')
         }
+    }
+}
+
+export function combineRolls(atks) {
+    if (atks.length > 1) {
+        let combined = {}
+        for (let dmgA in atks[0]) {
+            for (let dmgB in atks[1]) {
+                let dmg = Number(dmgA) + Number(dmgB)
+                let chance = atks[0][dmgA] * atks[1][dmgB]
+                combined[dmg] = (combined[dmg] || 0) + chance
+            }
+        }
+        let total = 0
+        for (let i in combined) {
+            total += combined[i]
+        }
+        atks[0] = combined
+        atks.splice(1,1)
+        return combineRolls(atks)
+    } else {
+        return atks[0]
     }
 }
