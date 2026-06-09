@@ -116,6 +116,10 @@ export function toggleSelectedAtk(e) {
     }
 }
 
+// might move this elsewhere because i need to account for sitrus and stuff
+// or just split into 2 sets at a time idk
+// maybe i can just run an event trigger check on each loop
+// rename function to something like getKOChance
 export function combineRolls(atks) {
     if (atks.length > 1) {
         let combined = {}
@@ -126,14 +130,18 @@ export function combineRolls(atks) {
                 combined[dmg] = (combined[dmg] || 0) + chance
             }
         }
-        let total = 0
-        for (let i in combined) {
-            total += combined[i]
-        }
         atks[0] = combined
         atks.splice(1,1)
         return combineRolls(atks)
     } else {
         return atks[0]
     }
+}
+
+export function maxEVs() {
+    return gen == 0 ? 32 : 252
+}
+
+export function evInc() {
+    return gen == 0 ? 1 : 4
 }

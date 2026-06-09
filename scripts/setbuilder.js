@@ -3,7 +3,9 @@
 import {
     calcStatEVs,
     toggleSelectedAtk,
-    combineRolls
+    combineRolls,
+    evInc,
+    maxEVs
 } from './util.js';
 
 class Attack {
@@ -50,6 +52,8 @@ class Benchmark {
         attacks = [],
         hpmods = new HPMods,
         damage = {},
+        acceptChance = 0,
+        // category = '',
         evs = {}, // used for ko chance and displayed calcs
         jquery = [], // html for list of attacks
         result = ''
@@ -57,6 +61,8 @@ class Benchmark {
         this.attacks = attacks
         this.hpmods = hpmods
         this.damage = damage
+        this.acceptChance = acceptChance
+        // this.category = category
         this.evs = evs
         this.jquery = jquery
         this.result = result
@@ -65,9 +71,26 @@ class Benchmark {
     getHP(evs) {
         let attack = this.attacks.at(-1)
         let defender = attack.draining ? attack.attacker : attack.defender
-        let hp = calcStatEVs(defender, 'hp', evs.hp)
+        let hp = calcStatEVs(defender, 'hp', evs)
         // apply hpmods here
         return hp
+    }
+
+    getCat() {
+        let cat = ''
+        for (let i = 0; i < this.attacks.length; i++) {
+            let atk = this.attacks[i]
+            if (!atk.draining && (atk.move.bp !== 0 || ['Fling', 'Natural Gift'].includes(atk.move.name))) {
+                let moveCat = atk.move.overrideDefensiveStat === 'def' ? 'Physical' : atk.move.category
+                if (!cat) {
+                    cat = moveCat
+                } else if (cat !== moveCat) {
+                    cat = 'Mixed'
+                    break
+                }
+            }
+        }
+        return cat
     }
 
     //not sure if i will use this
@@ -78,10 +101,32 @@ class Benchmark {
         })
     }
 
+    // getDmg(evs = {}) {
+    //     let rolls = []
+    //     if (evs) {
+    //         this.attacks.forEach((attack) => {
+    //             attack.draining ? attack.attacker.evs = evs : attack.defender.evs = evs
+    //             let rawDmg = attack.getDmg()
+    //             let chance = 1.0 / rawDmg.length // account for crit and acc here as needed
+    //             let dmg = {}
+    //             rawDmg.forEach((roll) => {
+    //                 dmg[roll] = (dmg[roll] || 0) + chance
+    //             })
+    //             rolls.push(dmg)
+    //         })
+    //     } else {
+    //         this.attacks.forEach((attack) => {
+    //             rolls.push(attack.damage)
+    //         })
+    //     }
+    //     this.damage = combineRolls(rolls)
+    //     return this.damage
+    // }
+
     calculate(evs = {}) {
-        let result = 'Calculation Failed'
+        let result = ': Calculation Failed'
         let koChance = 0.0
-        let hp = this.getHP(evs)
+        let hp = this.getHP(evs.hp)
         let rolls = []
 
         if (evs) {
@@ -101,27 +146,27 @@ class Benchmark {
             })
         }
         this.damage = combineRolls(rolls)
-        let total = 0
 
         for (let dmg in this.damage) {
             if (Number(dmg) >= hp) {
                 koChance += this.damage[dmg]
             }
-            total += this.damage[dmg]
         }
-        console.log(total)
 
-        koChance *= 100
-        this.result = `: ${(Math.round(koChance * 1000) / 1000).toFixed(3)}% chance to KO` // add dmg range here too
-        return koChance 
+        //koChance = (Math.round(koChance * 100000) / 1000).toFixed(3)
+        //this.result = `: ${koChance}% chance to KO` // add dmg range here too
+        // conflict where result updates during optimization, will move to different function
+        return koChance
     }
+
+
 }
 
 class pSet {
     constructor(
         benchmarks = [],
         forms = [], // store all forms here ie Megas, Aegislash
-        evs = {hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0}, // used for optimized ev spread
+        evs = {}, // used for optimized ev spread
         nature = '',
         output = [] // html for optimized spreads
     ) {
@@ -133,56 +178,55 @@ class pSet {
     }
 
     evUp(statID) {
-        let max = gen == 0 ? 32 : 252
         let evs = this.evs[statID]
-        if (evs >= max) return false
-        let inc = gen == 0 ? 1 : 4
+        if (evs >= maxEVs()) return false
         if (gen != 0) evs = evs - (evs % 4) // if not divisible by 4
         let oldStats = this.forms.flatMap((form) => calcStatEVs(form, statID, evs))
         let statChanged = false
-        while (evs < max && !statChanged) {
-            evs += inc
+        while (evs < maxEVs() && !statChanged) {
+            evs += evInc()
             statChanged = oldStats.some((stat, i) => {
                 return stat != calcStatEVs(this.forms[i], statID, evs)
             })
         }
         if (evs != this.evs[statID]) this.evs[statID] = evs
-        if (!statChanged) return false
-        // update benchmarks with new evs
-        this.benchmarks.forEach((benchmark) => {
-            benchmark.attacks.forEach((attack) => {
-                attack.draining ?
-                    attack.attacker.evs[statID] = evs :
-                    attack.defender.evs[statID] = evs
-            })
-        })
-        return true
+        return statChanged
+        // if (!statChanged) return false
+        // // update benchmarks with new evs
+        // // this.benchmarks.forEach((benchmark) => {
+        // //     benchmark.attacks.forEach((attack) => {
+        // //         attack.draining ?
+        // //             attack.attacker.evs[statID] = evs :
+        // //             attack.defender.evs[statID] = evs
+        // //     })
+        // // })
+        // return true
     }
 
     evDown(statID) {
         let evs = this.evs[statID]
         if (evs <= 0) return false
-        let inc = gen == 0 ? 1 : 4
         if (gen != 0) evs = evs - (evs % 4) // if not divisible by 4
         let oldStats = this.forms.flatMap((form) => calcStatEVs(form, statID, evs))
         let statChanged = false
         while (evs > 0 && !statChanged) {
-            evs -= inc
+            evs -= evInc()
             statChanged = oldStats.some((stat, i) => {
                 return stat != calcStatEVs(this.forms[i], statID, evs)
             })
         }
         if (evs != this.evs[statID]) this.evs[statID] = evs
-        if (!statChanged) return false
-        // update benchmarks with new evs
-        this.benchmarks.forEach((benchmark) => {
-            benchmark.attacks.forEach((attack) => {
-                attack.draining ?
-                    attack.attacker.evs[statID] = evs :
-                    attack.defender.evs[statID] = evs
-            })
-        })
-        return true
+        return statChanged
+        // if (!statChanged) return false
+        // // update benchmarks with new evs
+        // // this.benchmarks.forEach((benchmark) => {
+        // //     benchmark.attacks.forEach((attack) => {
+        // //         attack.draining ?
+        // //             attack.attacker.evs[statID] = evs :
+        // //             attack.defender.evs[statID] = evs
+        // //     })
+        // // })
+        // return true
     }
 
     newBench() {
@@ -203,7 +247,28 @@ class pSet {
             move,
             field
         ))
-        // this.forms.push(defender)
+
+        // update category of benchmark
+        // maybe dont because you have to recalc anyway on remove atk
+        // check if draining here too
+        // if ((move.bp !== 0 || ['Fling', 'Natural Gift'].includes(move.name))) {
+        //     let moveCat = move.overrideDefensiveStat === 'def' ? 'Physical' : move.category
+        //     if (!b.category) {
+        //         b.category = moveCat
+        //     } else if (b.category !== moveCat) {
+        //         b.category = 'Mixed'
+        //     }
+        // }
+
+        //add new form
+        // really only care about stats, so i might change this to save some storage space
+        if (
+            this.forms.every((form) => {
+                return JSON.stringify(form.species.baseStats) !== JSON.stringify(defender.species.baseStats)
+            })
+        ) {
+            this.forms.push(defender)
+        }
 
         !b.evs ? b.evs = defender.evs : defender.evs = b.evs
         let result = calc.calculate(gen, attacker, defender, move, field)
@@ -234,33 +299,146 @@ class pSet {
         let b = this.benchmarks[bench]
         b.attacks.splice(atk,1)
         b.jquery.splice(atk,1)
+        // need to check forms
+        // also recalc bench maybe
         console.log(this)
     }
 
+    // requires lower limit to be increased by one else infinite loop
+    evBinary(statID, upper, lower) {
+        if (upper < lower) return false
+        let evs = (upper + lower) / 2
+        gen == 0 ? evs = Math.floor(evs) : evs = evs - (evs % 4) // round off evs
+        this.evs[statID] = evs
+        console.log(`${evs}-${upper}-${lower}`)
+        return true
+    }
+
     getSpreads() {
-        let mixedBenches = [] //
+        // hp with 0 defense evs
+        // if max hp binary search defense evs (different with mixed benches)
+        // this is our starting point ev spread
+        // lower hp until benchmark fails
+        // raise defense until benchmark passes
+        // repeat until 0 hp or max def
+
+        // with mixed benches (phys atk and spec atk in same bench)
+        // same hp strat
+        // binary def first (arbitrary)
+        // if def max, binary spdef
+        // lower def + raise spdef until def 0 or spdef max
+        // lower hp until fail
+        // raise def until pass or max
+        // if not pass, raise spdef until pass
+        // if pass, lower def + raise spdef until def 0 or spdef max
+        // repeat until hp 0 or both def and spdef max
+
+        // always calc mixed benches last bc they can often be avoided by checking other benches
+
+        // calculate with 0 def evs first
+        let sortedBenchmarks = []
         this.benchmarks.forEach((benchmark) => {
-            benchmark.calculate(this.evs)
-            // hp with 0 defense evs
-            // if max hp binary search defense evs (different with mixed benches)
-            // this is out starting point ev spread
-            // lower hp until benchmark fails
-            // raise defense until benchmark passes
-            // repeat until 0 hp or max def
-
-            // with mixed benches (phys atk and spec atk in same bench)
-            // same hp strat
-            // binary def first (arbitrary)
-            // if def max, binary spdef
-            // lower def + raise spdef until def 0 or spdef max
-            // lower hp until fail
-            // raise def until pass or max
-            // if not pass, raise spdef until pass
-            // if pass, lower def + raise spdef until def 0 or spdef max
-            // repeat until hp 0 or both def and spdef max
-
-            // always calc mixed benches last bc they can often be avoided by checking other benches
+            // dont add empty benchmarks
+            // maybe just account for these so you can have hpmods without status move filler
+            if (benchmark.attacks) {
+                // sort benchmarks so that mixed benches are last
+                benchmark.getCat() === 'Mixed' ?
+                    sortedBenchmarks.push(benchmark) :
+                    sortedBenchmarks.unshift(benchmark)
+            }
         })
+        this.evs = {
+            hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0
+        }
+        let bulklessHP = 0
+        sortedBenchmarks.forEach((benchmark) => {
+            let upper = maxEVs()
+            // dont bother searching thru hp values that are less than what is already required by other benchmarks
+            let lower = bulklessHP
+            let benchHP = -1
+            while (this.evBinary('hp', upper, lower)) {
+                // need to recalc because hp changes rolls if you have sitrus
+                if (benchmark.calculate(this.evs) > benchmark.acceptChance) {
+                    lower = this.evs.hp + evInc()
+                } else {
+                    upper = this.evs.hp - evInc()
+                    benchHP = this.evs.hp // save the least required hp evs
+                }
+            }
+            if (benchHP === -1) {
+                bulklessHP = maxEVs()
+                // break
+                // not sure if i should just use a for loop or not
+            } else if (benchHP > bulklessHP) {
+                bulklessHP = benchHP // if bench requires more hp, save here
+            }
+        })
+        // hp with 0 defense evs acquired
+        this.evs.hp = bulklessHP
+
+        let startingDef = 0
+        let startingSpD = 0
+        if (this.evs.hp === maxEVs()) {
+            sortedBenchmarks.forEach((benchmark) => {
+                // thinking i can turn these binary loops into functions, not sure
+                let upper = maxEVs()
+                let cat = benchmark.getCat() // double call to this function but w/e can come back to this later
+                let catStat = cat === 'Special' ? 'spd' : 'def'
+                let lower = cat === 'Special' ? startingSpD : startingDef
+                let benchDef = -1
+                let benchSpD = -1
+                if (cat === 'Mixed') this.evs.spd = startingSpD
+                while(this.evBinary(catStat, upper, lower)) {
+                    if (benchmark.calculate(this.evs) > benchmark.acceptChance) {
+                        lower = this.evs[catStat] + evInc()
+                    } else {
+                        upper = this.evs[catStat] - evInc()
+                        cat === 'Special' ? benchSpD = this.evs[catStat] : benchDef = this.evs[catStat]
+                    }
+                }
+                if (cat === 'Mixed' && benchDef === -1) {
+                    startingDef = maxEVs()
+                    this.evs.def = startingDef
+                    upper = maxEVs()
+                    lower = startingSpD
+                    while(this.evBinary('spd', upper, lower)) {
+                        if (benchmark.calculate(this.evs) > benchmark.acceptChance) {
+                            lower = this.evs['spd'] + evInc()
+                        } else {
+                            upper = this.evs['spd'] - evInc()
+                            benchSpD = this.evs['spd']
+                        }
+                    }
+                    if (benchSpD === -1) {
+                        console.log('fail')
+                        return false
+                    } else {
+                        if (benchSpD > startingSpD) startingSpD = benchSpD
+                    }
+                } else {
+                    if (cat === 'Special' ? benchSpD === -1 : benchDef === -1) {
+                        console.log('fail')
+                        return false
+                    } else {
+                        if (cat === 'Special') {
+                            if (benchSpD > startingSpD) startingSpD = benchSpD
+                        } else {
+                            if (benchDef > startingDef) startingDef = benchDef
+                        }
+                    }
+                }
+            })
+        }
+        this.evs.def = startingDef
+        this.evs.spd = startingSpD
+        console.log(this.evs)
+        // save these evs and any evs with greater hp (assuming 0 def evs)
+        //starting point acquired
+
+
+        // do {
+        // } while (this.evDown('hp'))
+        
         console.log(this)
     }
 }
