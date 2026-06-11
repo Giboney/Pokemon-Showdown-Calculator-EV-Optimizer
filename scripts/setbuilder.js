@@ -403,8 +403,7 @@ class pSet {
                 if (benchmark.category === 'Mixed') {
                     // if def is maxed, put evs into spd (mixed bench)
                     if (benchDef === -1) {
-                        startingDef = maxEVs()
-                        this.evs.def = startingDef
+                        this.evs.def = maxEVs()
                         upper = maxEVs()
                         lower = startingSpD
                         while(this.evBinary('spd', upper, lower)) {
@@ -428,18 +427,27 @@ class pSet {
                     // now we have the base evs for the mixed bench
                     // do the lower def + raise spdef strat
                     let ded = false
-                    while (this.evDown('def') && !ded) {
-                        ded = benchmark.calculate(this.evs) > benchmark.acceptChance
+                    while (!ded) {
                         while (!ded) {
                             if (!this.evDown('def')) break
+                            if (this.evs.def < startingDef) {
+                                this.evUp('def')
+                                break
+                            }
                             ded = benchmark.calculate(this.evs) > benchmark.acceptChance
+                        }
+                        // raise defense to get passing spread, and save that
+                        if (ded) {
+                            this.evUp('def')
+                            console.log(this.evs)
+                            benchDef = this.evs.def
+                            this.evDown('def')
+                        } else {
+                            break
                         }
                         while (ded) {
                             if (!this.evUp('spd')) break
                             ded = benchmark.calculate(this.evs) > benchmark.acceptChance
-                        }
-                        if (!ded) {
-                            console.log(this.evs)
                         }
                     }
                 } else {
@@ -458,7 +466,6 @@ class pSet {
         }
         this.evs.def = startingDef
         this.evs.spd = startingSpD
-        console.log(this.evs)
         // save these evs and any evs with greater hp if possible
         //starting point acquired
 
@@ -485,29 +492,38 @@ class pSet {
                 if (benchmark.category === 'Mixed') {
                     // def maxed, put evs in spd
                     while (ded) {
-                        if (!this.evUp('spd')) break
+                        if (!this.evUp('spd')) { break }
                         ded = benchmark.calculate(this.evs) > benchmark.acceptChance
                     }
                     if (!ded) {
-                        console.log(this.evs) // save to mixed bench storage
+                        startingSpD = this.evs.spd
                     } else {
                         return true // return spreads now, hp cannot be lowered further
                     }
+                    // dont need to save here, will get saved in next loop
                     // will need to check against previous mixed benches to see min spd for each def value
-                    while (this.evDown('def') && this.evs.def >= startingDef && !ded) {
-                        ded = benchmark.calculate(this.evs) > benchmark.acceptChance
+                    while (!ded) {
                         while (!ded) {
-                            if (!this.evDown('def') || this.evs.def < startingDef) break
+                            if (!this.evDown('def')) { break }
+                            if (this.evs.def < startingDef) {
+                                this.evUp('def')
+                                break
+                            }
                             ded = benchmark.calculate(this.evs) > benchmark.acceptChance
+                        }
+                        if (ded) {
+                            this.evUp('def')
+                            console.log(this.evs) // save to temp mixed bench storage
+                            this.evDown('def')
+                        } else {
+                            break
                         }
                         while (ded) {
-                            if (!this.evUp('spd')) break
+                            if (!this.evUp('spd')) { break }
                             ded = benchmark.calculate(this.evs) > benchmark.acceptChance
                         }
-                        if (!ded) {
-                            console.log(this.evs) // save to mixed bench database
-                        }
                     }
+                    this.evs.spd = startingSpD
                 } else if (ded) {
                     console.log('end')
                     return true // return spreads now, hp cannot be lowered further
