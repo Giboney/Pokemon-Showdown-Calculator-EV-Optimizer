@@ -84,7 +84,7 @@ export function doPanels() {
     $('#optimizeButton').on('click', function() {
         // calculate spreads
         let time = Date.now()
-        pokeSet.getSpreads()
+        console.log(pokeSet.getSpreads())
         time = Date.now() - time
         console.log(parseInt((time/(1000*60))%60) + " min " + parseInt((time/1000)%60) + " sec " + parseInt((time%1000)) + " millisec")
         // create output tab

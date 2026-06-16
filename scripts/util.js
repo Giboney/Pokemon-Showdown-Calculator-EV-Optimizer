@@ -146,10 +146,43 @@ export function evInc() {
     return gen == 0 ? 1 : 4
 }
 
+export function maxTotalEVs() {
+    return gen == 0 ? 66 : 508
+}
+
 export function isEmptyObj(obj) {
     return Object.keys(obj).length === 0 && obj.constructor === Object;
 }
 
 export function sumValues(obj) {
     return Object.values(obj).reduce((a, b) => a + b)
+}
+
+export function addMixedBenchToStorage(storage, evs) {
+    if (storage.length === 0 ||
+        storage.every((spread) => {
+            return sumValues(spread) === sumValues(evs)
+        })
+    ) {
+        storage.push({...evs})
+    } else if (
+        storage.every((spread) => {
+            return sumValues(spread) > sumValues(evs)
+        })
+    ) {
+        storage = [{...evs}]
+    }
+    console.log(JSON.stringify(storage))
+    return storage
+}
+
+export function sortSpreads(spreads) {
+    spreads = spreads.filter((evs) => {
+        evs.total = sumValues(evs)
+        return evs.total <= maxTotalEVs()
+    })
+
+    return spreads.sort((a, b) => {
+        return (a.total * 10 + a.hp) - (b.total * 10 + a.hp)
+    })
 }

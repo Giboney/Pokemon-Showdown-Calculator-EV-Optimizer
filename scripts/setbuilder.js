@@ -7,7 +7,9 @@ import {
     evInc,
     maxEVs,
     isEmptyObj,
-    sumValues
+    sumValues,
+    addMixedBenchToStorage,
+    sortSpreads
 } from './util.js';
 
 class Attack {
@@ -308,6 +310,42 @@ class pSet {
         console.log(this)
     }
 
+
+    minEVsBinary(bench, stat, upper, lower) {
+        let minEVs = -1
+        while (this.evBinary(stat, upper, lower)) {
+            if (bench.calculate(this.evs) > bench.acceptChance) {
+                lower = this.evs[stat] + evInc()
+            } else {
+                upper = this.evs[stat] - evInc()
+                minEVs = this.evs[stat] // save the least required evs
+            }
+        }
+        return minEVs
+    }
+
+    // returns true if successfully lives the attacks, returns false if koed with max evs
+    evUpToPass(bench, stat, ded = true) {
+        while (ded) {
+            if (!this.evUp(stat)) break
+            ded = bench.calculate(this.evs) > bench.acceptChance
+        }
+        return !ded
+    }
+
+    // returns true if successfully lowered evs until failure. returns false if pokemon still survives
+    evDownToFail(bench, stat, min, ded = false) {
+        while (!ded) {
+            if (!this.evDown(stat)) break
+            if (this.evs[stat] < min) {
+                this.evUp(stat)
+                break
+            }
+            ded = bench.calculate(this.evs) > bench.acceptChance
+        }
+        return ded
+    }
+
     // still need to cap evs at 508/66
     getSpreads() {
         // hp with 0 defense evs
@@ -333,138 +371,82 @@ class pSet {
         // calculate with 0 def evs first
         this.output = []
         let sortedBenchmarks = []
+        // let hasMixedBench = false
         this.benchmarks.forEach((benchmark) => {
             // dont add empty benchmarks
             // maybe just account for these so you can have hpmods without status move filler
             if (benchmark.attacks.length > 0) {
                 // sort benchmarks so that mixed benches are last
-                benchmark.getCat() === 'Mixed' ? // also updates benchmark.category
-                    sortedBenchmarks.push(benchmark) :
+                if (benchmark.getCat() === 'Mixed') { // also updates benchmark.category
+                    sortedBenchmarks.push(benchmark)
+                    // hasMixedBench = true
+                } else {
                     sortedBenchmarks.unshift(benchmark)
+                }
             }
         })
         this.evs = {
             hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0
         }
+        // get starting hp value
         let bulklessHP = 0
-        sortedBenchmarks.forEach((benchmark) => {
-            let upper = maxEVs()
-            // dont bother searching thru hp values that are less than what is already required by other benchmarks
-            let lower = bulklessHP
-            let benchHP = -1
-            while (this.evBinary('hp', upper, lower)) {
-                // need to recalc because hp changes rolls if you have sitrus
-                // can maybe just grab the same rolls and recalc ko chance with new hp instead
-                if (benchmark.calculate(this.evs) > benchmark.acceptChance) {
-                    lower = this.evs.hp + evInc()
-                } else {
-                    upper = this.evs.hp - evInc()
-                    benchHP = this.evs.hp // save the least required hp evs
-                }
+        for (let i = 0; i < sortedBenchmarks.length; i++) {
+            let benchHP = this.minEVsBinary(sortedBenchmarks[i], 'hp', maxEVs(), bulklessHP)
+            if (benchHP === -1 || benchHP > bulklessHP) {
+                bulklessHP = benchHP
+                if (benchHP === -1) break // stop loop in case max hp is reached early
             }
-            if (benchHP === -1) {
-                bulklessHP = maxEVs()
-                // break
-                // not sure if i should just use a for loop or not
-            } else if (benchHP > bulklessHP) {
-                bulklessHP = benchHP // if bench requires more hp, save here
-            }
-        })
-        // hp with 0 defense evs acquired
+        }
         this.evs.hp = bulklessHP
 
         let startingDef = 0
         let startingSpD = 0
         let mixedBenchStorage = []
-        if (this.evs.hp === maxEVs()) {
+        // add defense if needed
+        if (this.evs.hp === -1) {
+            this.evs.hp = maxEVs()
             for (let i = 0; i < sortedBenchmarks.length; i++) {
                 let benchmark = sortedBenchmarks[i]
-                // thinking i can turn these binary loops into functions, not sure
-                let upper = maxEVs()
-                let catStat = benchmark.category === 'Special' ? 'spd' : 'def'
                 let lower = benchmark.category === 'Special' ? startingSpD : startingDef
-                let benchDef = -1
-                let benchSpD = -1
+                let catStat = benchmark.category === 'Special' ? 'spd' : 'def'
                 if (benchmark.category === 'Mixed') this.evs.spd = startingSpD
 
-                while(this.evBinary(catStat, upper, lower)) {
-                    if (benchmark.calculate(this.evs) > benchmark.acceptChance) {
-                        lower = this.evs[catStat] + evInc()
-                    } else {
-                        upper = this.evs[catStat] - evInc()
-                        benchmark.category === 'Special' ? benchSpD = this.evs[catStat] : benchDef = this.evs[catStat]
-                    }
-                }
+                let benchDef = this.minEVsBinary(benchmark, catStat, maxEVs(), lower)
 
                 if (benchmark.category === 'Mixed') {
                     // if def is maxed, put evs into spd (mixed bench)
                     if (benchDef === -1) {
                         this.evs.def = maxEVs()
-                        upper = maxEVs()
-                        lower = startingSpD
-                        while(this.evBinary('spd', upper, lower)) {
-                            if (benchmark.calculate(this.evs) > benchmark.acceptChance) {
-                                lower = this.evs['spd'] + evInc()
-                            } else {
-                                upper = this.evs['spd'] - evInc()
-                                benchSpD = this.evs['spd']
-                            }
-                        }
-                        if (benchSpD === -1) {
-                            console.log('fail')
+                        benchDef = this.minEVsBinary(benchmark, 'spd', maxEVs(), startingSpD)
+                        if (benchDef === -1) {
                             return false
-                        } else {
-                            if (benchSpD > startingSpD) {
-                                startingSpD = benchSpD
-                                this.evs.spd = startingSpD // update this.evs for the next loop
-                            }
+                        } else if (benchDef > startingSpD) {
+                            startingSpD = benchDef
+                            this.evs.spd = startingSpD // update this.evs for the next loop
                         }
                     }
                     // now we have the base evs for the mixed bench
                     // do the lower def + raise spdef strat
                     let ded = false
                     while (!ded) {
-                        while (!ded) {
-                            if (!this.evDown('def')) break
-                            if (this.evs.def < startingDef) {
-                                this.evUp('def')
-                                break
-                            }
-                            ded = benchmark.calculate(this.evs) > benchmark.acceptChance
-                        }
-                        // raise defense to get passing spread, and save that
+                        ded = this.evDownToFail(benchmark, 'def', startingDef)
                         if (ded) {
+                            // save to temporary mixed bench storage
                             this.evUp('def')
-
-                            // save to temp mixed bench storage
-                            if (!mixedBenchStorage || mixedBenchStorage.every((spread) => {
-                                return sumValues(spread) === sumValues(this.evs)
-                            })) {
-                                mixedBenchStorage.push({...this.evs})
-                                
-                            } else if (mixedBenchStorage.every((spread) => {
-                                return sumValues(spread) > sumValues(this.evs)
-                            })) {
-                                mixedBenchStorage = [{...this.evs}]
-                            }
-
+                            mixedBenchStorage = addMixedBenchToStorage(mixedBenchStorage, this.evs)
                             this.evDown('def')
                         } else {
                             break
                         }
-                        while (ded) {
-                            if (!this.evUp('spd')) break
-                            ded = benchmark.calculate(this.evs) > benchmark.acceptChance
-                        }
+                        ded = !this.evUpToPass(benchmark, 'spd')
                     }
                     this.evs.spd = startingSpD // update this.evs for the next loop
                 } else {
-                    if (benchmark.category === 'Special' ? benchSpD === -1 : benchDef === -1) {
-                        console.log('fail')
+                    if (benchDef === -1) {
                         return false
                     } else {
                         if (benchmark.category === 'Special') {
-                            if (benchSpD > startingSpD) { startingSpD = benchSpD }
+                            if (benchDef > startingSpD) { startingSpD = benchDef }
                         } else {
                             if (benchDef > startingDef) { startingDef = benchDef }
                         }
@@ -474,85 +456,53 @@ class pSet {
         }
         this.evs.def = startingDef
         this.evs.spd = startingSpD
-        mixedBenchStorage.length > 0 ? this.output = this.output.concat(mixedBenchStorage) : this.output.push({...this.evs})
-        // save these evs and any evs with greater hp if possible
         //starting point acquired
+        mixedBenchStorage.length > 0 ? this.output = this.output.concat(mixedBenchStorage) : this.output.push({...this.evs})
 
         // lower hp + raise defenses
         while (this.evDown('hp')) {
-            // need to recalc mixed benches for each hp value i think
-            while (sortedBenchmarks.every((benchmark) => {
-                return benchmark.calculate(this.evs) <= benchmark.acceptChance
-            })) {
-                if (this.evs.hp > 0) this.output.push({...this.evs})
-                if (!this.evDown('hp')) break
-            }
-
             for (let i = 0; i < sortedBenchmarks.length; i++) {
                 let benchmark = sortedBenchmarks[i]
-                let catStat = benchmark.category === 'Special' ? 'spd' : 'def'
                 let ded = benchmark.calculate(this.evs) > benchmark.acceptChance
-                if (benchmark.category === 'Mixed') startingDef = this.evs.def // repurposing this variable idc
-                mixedBenchStorage = []
-                while (ded) {
-                    if (!this.evUp(catStat)) break
-                    ded = benchmark.calculate(this.evs) > benchmark.acceptChance
-                }
+                if (benchmark.category === 'Mixed' || ded) {
+                    let catStat = benchmark.category === 'Special' ? 'spd' : 'def'
 
-                if (benchmark.category === 'Mixed') {
-                    // def maxed, put evs in spd
-                    while (ded) {
-                        if (!this.evUp('spd')) { break }
-                        ded = benchmark.calculate(this.evs) > benchmark.acceptChance
-                    }
-                    if (ded) {
-                        console.log(this.output)
-                        return true // return spreads now, hp cannot be lowered further
-                    }
-                    // dont need to save here, will get saved in next loop
-                    while (!ded) {
+                    ded = !this.evUpToPass(benchmark, catStat)
+
+                    if (benchmark.category === 'Mixed') {
+                        mixedBenchStorage = [this.evs] // IDK
+                        // if def maxed, put evs in spd
+                        ded = !this.evUpToPass(benchmark, 'spd', ded)
+                        if (ded) return sortSpreads(this.output) // return spreads now, hp cannot be lowered further
+                        // dont need to save here, will get saved in next loop
                         while (!ded) {
-                            if (!this.evDown('def')) { break }
-                            if (this.evs.def < startingDef) {
+                            ded = this.evDownToFail(benchmark, 'def', startingDef)
+                            if (ded) {
+                                // save to temporary mixed bench storage
                                 this.evUp('def')
+                                mixedBenchStorage = addMixedBenchToStorage(mixedBenchStorage, this.evs)
+                                this.evDown('def')
+                            } else {
                                 break
                             }
-                            ded = benchmark.calculate(this.evs) > benchmark.acceptChance
+                            ded = !this.evUpToPass(benchmark, 'spd')
                         }
-                        if (ded) {
-                            this.evUp('def')
-
-                            // save to temp mixed bench storage
-                            if (!mixedBenchStorage || mixedBenchStorage.every((spread) => {
-                                return sumValues(spread) === sumValues(this.evs)
-                            })) {
-                                mixedBenchStorage.push({...this.evs})
-                                
-                            } else if (mixedBenchStorage.every((spread) => {
-                                return sumValues(spread) > sumValues(this.evs)
-                            })) {
-                                mixedBenchStorage = [{...this.evs}]
-                            }
-                            
-                            this.evDown('def')
-                        } else {
-                            break
+                        // save evs here to save time on next loop/mixed bench
+                        if (mixedBenchStorage.length > 0) {
+                            startingDef = this.evs.def // for mixed benches to know when to stop lowering def
+                            this.evs = mixedBenchStorage[0]
                         }
-                        while (ded) {
-                            if (!this.evUp('spd')) break
-                            ded = benchmark.calculate(this.evs) > benchmark.acceptChance
-                        }
+                    } else if (ded) {
+                        return sortSpreads(this.output) // return spreads now, hp cannot be lowered further
+                    } else {
+                        startingDef = this.evs.def // for mixed benches to know when to stop lowering def
                     }
-                    this.evs.spd = mixedBenchStorage[0].spd
-                } else if (ded) {
-                    console.log(this.output)
-                    return true // return spreads now, hp cannot be lowered further
                 }
             }
             // save evs here
             mixedBenchStorage.length > 0 ? this.output = this.output.concat(mixedBenchStorage) : this.output.push({...this.evs})
         }
-        console.log(this.output)
+        return sortSpreads(this.output)
     }
 }
 
