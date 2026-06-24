@@ -159,20 +159,17 @@ export function sumValues(obj) {
 }
 
 export function addMixedBenchToStorage(storage, evs) {
-    if (storage.length === 0 ||
-        storage.every((spread) => {
-            return sumValues(spread) === sumValues(evs)
-        })
-    ) {
+    let add = true
+    let replace = true
+    storage.forEach((spread) => {
+        add = add && sumValues(spread) === sumValues(evs)
+        replace = replace && sumValues(spread) > sumValues(evs)
+    })
+    if (add) {
         storage.push({...evs})
-    } else if (
-        storage.every((spread) => {
-            return sumValues(spread) > sumValues(evs)
-        })
-    ) {
+    } else if (replace) {
         storage = [{...evs}]
     }
-    console.log(JSON.stringify(storage))
     return storage
 }
 
